@@ -8,19 +8,19 @@
 const NO_POSTER_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='600' viewBox='0 0 400 600'%3E%3Crect width='400' height='600' fill='%231a1a1a'/%3E%3Cpath d='M200 250a50 50 0 0 0-50 50c0 27.6 22.4 50 50 50s50-22.4 50-50-22.4-50-50-50zm0 80c-16.5 0-30-13.5-30-30s13.5-30 30-30 30 13.5 30 30-13.5 30-30 30zm-80 90h160v20H120zm0-160h20v100h-20z' fill='%23333'/%3E%3Ctext x='50%25' y='75%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23555' letter-spacing='2'%3ENO POSTER%3C/text%3E%3C/svg%3E";
 
 const CONFIG = {  
-    folder: '"Movies"', // Movie data file path
-    statusWatched: "watch",  
-    statusList: "to be watched",  
+    folder: '"Books"', // Movie data file path
+    statusWatched: "read",  
+    statusList: "unread",  
     imagePlaceholder: NO_POSTER_SVG,  
     listsDbPath: "" // Enter any file path
 };
 
 const GenreColors = {
-    "Action": "#ef4444", "Adventure": "#f97316", "Animation": "#06b6d4",
-    "Comedy": "#eab308", "Crime": "#71717a", "Drama": "#8b5cf6",
-    "Fantasy": "#d946ef", "Horror": "#9f1239", "Mystery": "#64748b",
-    "Romance": "#ec4899", "Sci-Fi": "#10b981", "Thriller": "#14b8a6",
-    "Western": "#b45309", "Family": "#84cc16", "default": "#6366f1"
+    "action": "#ef4444", "adventure": "#f97316", "autobiography": "#06b6d4",
+    "comedy": "#eab308", "crime": "#71717a", "contemporary": "#8b5cf6",
+    "fantasy": "#d946ef", "horror": "#9f1239", "mystery": "#64748b",
+    "romance": "#ec4899", "sci-fi": "#10b981", "thriller": "#14b8a6",
+    "Western": "#b45309", "historical": "#84cc16", "default": "#6366f1"
 };
 
 // --- 2. STATE MANAGEMENT ---
