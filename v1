@@ -87,16 +87,16 @@ const SortCriteria = [
 function debounce(func, wait) { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), wait); }; }
 function cleanText(raw) { if (!raw) return null; if (Array.isArray(raw)) return raw.map(cleanText).filter(x => x); if (typeof raw === 'object' && raw.path) return raw.display ? raw.display : raw.path.split('/').pop().replace('.md', ''); return String(raw).replace(/\[\[.*?\|(.*?)\]\]/g, '$1').replace(/\[\[(.*?)\]\]/g, '$1').trim(); }
 function formatTotalRuntime(pages) { 
-    return pages ? `${pages} pages` : "0 pages"; 
+    return pages ? `${pages}` : "0";
 }
 function formatLongDuration(pages) { 
-    return pages ? `${pages.toLocaleString()} total pages` : "0 pages"; 
+    return pages ? `${pages.toLocaleString()}` : "0";
+}
+function formatDuration(raw) { 
+    if (!raw || raw === 0) return "-";
+    return `${raw}`; 
 }
 function getBadges(p) { const tags = (Array.isArray(p.tags) ? p.tags.join(' ') : (p.tags||'')) + ' ' + (p.quality||'') + ' ' + (p.tech||''); const lower = tags.toLowerCase(); const badges = []; if (lower.includes('4k') || lower.includes('uhd')) badges.push('4K'); if (lower.includes('hdr')) badges.push('HDR'); if (lower.includes('imax')) badges.push('IMAX'); if (lower.includes('atmos')) badges.push('ATMOS'); return badges; }
-function formatDuration(raw) { 
-    if (!raw || raw === 0) return "No Data"; 
-    return `${raw} pages`; 
-}
 function parseDateSafe(input) { 
     if (!input) return null; 
     if (input.ts) return new Date(input.ts); 
