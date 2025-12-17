@@ -116,9 +116,9 @@ async function updateFileStatus(filePath, newStatus) {
             fm.status = newStatus;
             if (newStatus === CONFIG.statusWatched) {
                 const today = new Date().toISOString().split('T')[0];
-                if (!fm.log) fm.log = [today];
-                else if (Array.isArray(fm.log)) { if (!fm.log.includes(today)) fm.log.push(today); } 
-                else { if (!String(fm.log).includes(today)) fm.log = [fm.log, today]; }
+                if (!fm.readDate) fm.readDate = [today];
+                else if (Array.isArray(fm.readDate)) { if (!fm.readDate.includes(today)) fm.readDate.push(today); } 
+                else { if (!String(fm.readDate).includes(today)) fm.readDate = [fm.readDate, today]; }
             }
         });
         new Notice(`Status updated.`);
@@ -133,11 +133,11 @@ async function addRewatchLog(filePath) {
         await app.fileManager.processFrontMatter(file, (fm) => {
             const today = new Date().toISOString().split('T')[0];
             fm.status = CONFIG.statusWatched; 
-            if (!fm.log) fm.log = [today];
-            else if (Array.isArray(fm.log)) fm.log.push(today);
-            else fm.log = [fm.log, today];
+            if (!fm.readDate) fm.readDate = [today];
+            else if (Array.isArray(fm.readDate)) fm.readDate.push(today);
+            else fm.readDate = [fm.readDate, today];
         });
-        new Notice("Rewatch logged! 🎉");
+        new Notice("Re-read logged! 🎉");
         setTimeout(() => renderApp(), 300);
     } catch (e) { console.error(e); new Notice("Failed to log."); }
 }
@@ -347,8 +347,8 @@ function getMovieData(page) {
     const author = cleanText(p.author) || "Unknown";
     const cast = p.cast ? (Array.isArray(p.cast) ? p.cast.map(cleanText) : [cleanText(p.cast)]) : [];
     let watchDates = [];
-    if (p.log) {
-        let rawLogs = p.log;
+    if (p.readDate) {
+        let rawLogs = p.readDate;
         if (typeof rawLogs === 'string' && rawLogs.includes(',')) rawLogs = rawLogs.split(',').map(s => s.trim()); else if (!Array.isArray(rawLogs)) rawLogs = [rawLogs];
         watchDates = rawLogs.map(l => parseDateSafe(l)).filter(d => d !== null);
     }
