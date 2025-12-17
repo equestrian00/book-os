@@ -92,9 +92,9 @@ function formatTotalRuntime(pages) {
 function formatLongDuration(pages) { 
     return pages ? `${pages.toLocaleString()}` : "0";
 }
-function formatDuration(raw) { 
-    if (!raw || raw === 0) return "-";
-    return `${raw}`; 
+function formatDuration(pages) { 
+    if (!pages || pages === 0) return "-";
+    return `${pages}`; 
 }
 function getBadges(p) { const tags = (Array.isArray(p.tags) ? p.tags.join(' ') : (p.tags||'')) + ' ' + (p.quality||'') + ' ' + (p.tech||''); const lower = tags.toLowerCase(); const badges = []; if (lower.includes('4k') || lower.includes('uhd')) badges.push('4K'); if (lower.includes('hdr')) badges.push('HDR'); if (lower.includes('imax')) badges.push('IMAX'); if (lower.includes('atmos')) badges.push('ATMOS'); return badges; }
 function parseDateSafe(input) { 
@@ -526,11 +526,11 @@ function openAnalyticsModal() {
                 <div class="stats-hero-grid">
                     <div class="stat-hero-card">
                         <div class="shc-val">${data.totalRead}</div>
-                        <div class="shc-label">MOVIES</div>
+                        <div class="shc-label">BOOKS</div>
                     </div>
                     <div class="stat-hero-card">
                         <div class="shc-val">${data.totalDuration}</div>
-                        <div class="shc-label">TIME WATCHED</div>
+                        <div class="shc-label">TOTAL PAGES</div>
                     </div>
                     <div class="stat-hero-card">
                         <div class="shc-val">${data.avgScore}</div>
@@ -576,7 +576,7 @@ function openAnalyticsModal() {
 
                     <!-- COL 3: TOP ACTORS (RANK LIST) -->
                     <div class="stat-panel">
-                        <h3>TOP ACTORS</h3>
+                        <h3>TOP TROPES</h3>
                         <div class="simple-list">
                             ${data.topActors.map((d,i) => `
                             <div class="sl-row">
