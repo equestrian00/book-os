@@ -948,9 +948,8 @@ const createDualSlider = (parent, title, min, max, step, stateKey) => {
     track.style.background = `linear-gradient(to right, rgba(255,255,255,0.1) ${p1}%, var(--accent) ${p1}%, var(--accent) ${p2}%, rgba(255,255,255,0.1) ${p2}%)`;
 };
 
-createDualSlider(rowRanges, "Letterboxd Score", 0, 5, 0.1, "rangeLB");
 createDualSlider(rowRanges, "Personal Score", 0, 5, 0.1, "rangeMy");
-createDualSlider(rowRanges, "Release Year", 1920, 2030, 1, "rangeYear");
+createDualSlider(rowRanges, "Publication Year", 1920, 2030, 1, "rangeYear");
 
 
 // GENRES & COLLECTIONS
