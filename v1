@@ -1,7 +1,7 @@
 
 ```dataviewjs
 // ==================================================
-// CINEMA OS: GLOBAL EDITION
+// BOOK OS: GLOBAL EDITION
 // ==================================================
 
 // --- 1. SETTINGS & CONSTANTS ---
@@ -225,7 +225,7 @@ async function updateCollectionDetails(oldName, newName, newCover) {
 
 async function createNewList(name, cover, desc) {
     const listFile = app.vault.getAbstractFileByPath(CONFIG.listsDbPath);
-    if (!listFile) await app.vault.create(CONFIG.listsDbPath, "# Cinema OS Lists\n\n");
+    if (!listFile) await app.vault.create(CONFIG.listsDbPath, "# Book OS Lists\n\n");
     const targetFile = app.vault.getAbstractFileByPath(CONFIG.listsDbPath);
     try {
         await app.fileManager.processFrontMatter(targetFile, (fm) => {
@@ -508,7 +508,7 @@ function openAnalyticsModal() {
         const backdrop = document.createElement('div');
         backdrop.className = 'eth-modal-backdrop';
         
-        const allPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_CinemaOS_Lists");
+        const allPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists");
         const data = calculateAnalytics(allPages);
         const maxGenreCount = data.topGenres.length > 0 ? data.topGenres[0][1] : 1;
         
@@ -516,7 +516,7 @@ function openAnalyticsModal() {
         backdrop.innerHTML = `
         <div class="eth-modal-panel stats-mode wide-screen">
             <div class="nav-btn close-btn">${Icons.close}</div>
-            <div class="stats-header"><h2>CINEMA ANALYTICS</h2></div>
+            <div class="stats-header"><h2>BOOK ANALYTICS</h2></div>
             
             <div class="stats-content">
                 <!-- HERO CARDS -->
@@ -602,7 +602,7 @@ function openMovieSelectorModal(targetName, onAddCallback, mode = 'list') {
     // FORCE HIGHER Z-INDEX TO FIX OVERLAP ISSUE
     selectorBackdrop.style.zIndex = "2300"; 
     
-    const allMovies = dv.pages(CONFIG.folder).where(p => p.file.name !== "_CinemaOS_Lists").map(p => getMovieData(p)).sort((a,b) => a.title.localeCompare(b.title));
+    const allMovies = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists").map(p => getMovieData(p)).sort((a,b) => a.title.localeCompare(b.title));
     selectorBackdrop.innerHTML = `<div class="eth-modal-panel selector-panel"><div class="selector-header"><h3>Add to "${targetName}"</h3><div class="selector-search">${Icons.search}<input type="text" id="movie-selector-search" placeholder="Search movies..."></div><div class="nav-btn close-btn-selector">${Icons.close}</div></div><div class="selector-grid" id="movie-selector-grid"></div></div>`;
     document.body.appendChild(selectorBackdrop);
     requestAnimationFrame(() => selectorBackdrop.classList.add('active'));
@@ -697,7 +697,7 @@ function openMovieModal(m, parentStack = null) {
         const backButton = parentStack ? `<button class="nav-btn back-btn" title="Go Back">${Icons.back} <span>Back</span></button>` : '';
         const isWatched = m.status === CONFIG.statusWatched;
         const btnStatusHtml = `<div class="status-control-row"><button id="btn-status-toggle" class="status-indicator ${isWatched ? 'watched' : 'list'}" data-path="${m.path}">${isWatched ? 'WATCHED' : 'TO WATCH'}</button><button id="btn-rewatch" class="rewatch-btn" title="Logged Rewatch">${Icons.rewatch}</button></div>`;
-        backdrop.innerHTML = `<div class="eth-modal-panel movie-mode wide-screen"><div class="panel-bg" style="background-image: url('${m.cover}')"></div><div class="panel-overlay"></div><div class="panel-nav">${backButton}<button class="nav-btn close-btn">${Icons.close}</button></div><div class="panel-content"><div class="p-col-left"><img src="${m.cover}" class="poster-frame" />${m.score > 0 ? `<div class="poster-rating-badge"><span class="pr-label">MY RATING</span><div class="pr-val">${Icons.star} ${m.score}</div></div>` : ''}</div><div class="p-col-center"><div class="meta-tags-hero">${m.displayGenres.split('•').map(g => `<span class="hero-tag">${g.trim()}</span>`).join('')}</div><h1 class="movie-title">${m.title}</h1><div class="info-grid"><div class="info-item"><span class="ii-label">RUNTIME</span><span class="ii-val">${prettyRuntime}</span></div><div class="info-item"><span class="ii-label">YEAR</span><span class="ii-val">${m.year}</span></div><div class="info-item"><span class="ii-label">GENRE</span><span class="ii-val" style="color:${m.color}">${m.mainGenre}</span></div></div><div class="eth-plot-box"><p class="movie-plot">${m.description}</p></div><div class="section-title">CAST</div>${castHtml}</div><div class="p-col-right"><div class="ticket-card full-info"><div class="tc-header" style="background:${m.color}">CINEMA TICKET</div><div class="tc-body"><div class="tc-data-group"><div class="tc-row signature-row"><span>AUTHOR</span><div class="director-sign">${m.author}</div></div><div class="tc-row"><span>RELEASE DATE</span><b>${m.year}</b></div><div class="tc-row"><span>DATE ADDED</span><b>${dateAdded}</b></div><div class="tc-row"><span>QUALITY</span><div class="tc-badges-inline">${badgeHtml || '<span class="muted-badge">-</span>'}</div></div></div><div class="tc-separator"></div><div class="tc-status-area">${btnStatusHtml}${logHtml}</div></div><div class="tc-footer"><div class="barcode-mini">${Icons.barcode}</div><button id="btn-open-note" class="action-btn">OPEN NOTE</button></div></div></div></div></div>`;
+        backdrop.innerHTML = `<div class="eth-modal-panel movie-mode wide-screen"><div class="panel-bg" style="background-image: url('${m.cover}')"></div><div class="panel-overlay"></div><div class="panel-nav">${backButton}<button class="nav-btn close-btn">${Icons.close}</button></div><div class="panel-content"><div class="p-col-left"><img src="${m.cover}" class="poster-frame" />${m.score > 0 ? `<div class="poster-rating-badge"><span class="pr-label">MY RATING</span><div class="pr-val">${Icons.star} ${m.score}</div></div>` : ''}</div><div class="p-col-center"><div class="meta-tags-hero">${m.displayGenres.split('•').map(g => `<span class="hero-tag">${g.trim()}</span>`).join('')}</div><h1 class="movie-title">${m.title}</h1><div class="info-grid"><div class="info-item"><span class="ii-label">RUNTIME</span><span class="ii-val">${prettyRuntime}</span></div><div class="info-item"><span class="ii-label">YEAR</span><span class="ii-val">${m.year}</span></div><div class="info-item"><span class="ii-label">GENRE</span><span class="ii-val" style="color:${m.color}">${m.mainGenre}</span></div></div><div class="eth-plot-box"><p class="movie-plot">${m.description}</p></div><div class="section-title">CAST</div>${castHtml}</div><div class="p-col-right"><div class="ticket-card full-info"><div class="tc-header" style="background:${m.color}">BOOK TICKET</div><div class="tc-body"><div class="tc-data-group"><div class="tc-row signature-row"><span>AUTHOR</span><div class="director-sign">${m.author}</div></div><div class="tc-row"><span>RELEASE DATE</span><b>${m.year}</b></div><div class="tc-row"><span>DATE ADDED</span><b>${dateAdded}</b></div><div class="tc-row"><span>QUALITY</span><div class="tc-badges-inline">${badgeHtml || '<span class="muted-badge">-</span>'}</div></div></div><div class="tc-separator"></div><div class="tc-status-area">${btnStatusHtml}${logHtml}</div></div><div class="tc-footer"><div class="barcode-mini">${Icons.barcode}</div><button id="btn-open-note" class="action-btn">OPEN NOTE</button></div></div></div></div></div>`;
         document.body.appendChild(backdrop);
         requestAnimationFrame(() => backdrop.classList.add('active'));
         backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); closeModal(); };
@@ -759,7 +759,7 @@ function openSeriesModal(stack) {
             });
         }
         window.openMovieModalFromSeries = (path, stackTitle) => { const page = app.metadataCache.getFirstLinkpathDest(path, ""); const m = getMovieData({file: page, ...dv.page(path)}); openMovieModal(m, stack); };
-        window.removeMovieHandler = async (e, path, stackName, isUserList) => { e.stopPropagation(); const msg = isUserList ? `Remove movie from "${stackName}"?` : `Remove movie from "${stackName}" collection?`; showCustomConfirm("REMOVE MOVIE", msg, async () => { const callback = async () => { await renderApp(); const allPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_CinemaOS_Lists"); let updatedStack; if (isUserList) { const updatedLists = processUserLists(allPages); updatedStack = updatedLists.find(l => l.title === stackName); } else { const items = processItems(allPages, state.sortMode, state.sortDir, state.viewMode, 'all'); updatedStack = items.find(i => i.type === 'stack' && i.title === stackName); } if(updatedStack) { closeModal(); setTimeout(() => openSeriesModal(updatedStack), 300); } else { closeModal(); renderApp(); } }; if (isUserList) { await removeListFromMovie(path, stackName, callback); } else { await removeSeriesFromMovie(path, callback); } }); };
+        window.removeMovieHandler = async (e, path, stackName, isUserList) => { e.stopPropagation(); const msg = isUserList ? `Remove movie from "${stackName}"?` : `Remove movie from "${stackName}" collection?`; showCustomConfirm("REMOVE MOVIE", msg, async () => { const callback = async () => { await renderApp(); const allPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists"); let updatedStack; if (isUserList) { const updatedLists = processUserLists(allPages); updatedStack = updatedLists.find(l => l.title === stackName); } else { const items = processItems(allPages, state.sortMode, state.sortDir, state.viewMode, 'all'); updatedStack = items.find(i => i.type === 'stack' && i.title === stackName); } if(updatedStack) { closeModal(); setTimeout(() => openSeriesModal(updatedStack), 300); } else { closeModal(); renderApp(); } }; if (isUserList) { await removeListFromMovie(path, stackName, callback); } else { await removeSeriesFromMovie(path, callback); } }); };
         
         const btnAddSidebar = backdrop.querySelector('#btn-add-movie-sidebar'); 
         const btnAddEmpty = backdrop.querySelector('#btn-add-movie-empty'); 
@@ -768,7 +768,7 @@ function openSeriesModal(stack) {
         
         const triggerAdd = () => openMovieSelectorModal(stack.title, async () => { 
             await renderApp(); 
-            const allPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_CinemaOS_Lists"); 
+            const allPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists"); 
             let updatedStack;
             if (isUserList) {
                 const updatedLists = processUserLists(allPages); 
@@ -794,7 +794,7 @@ function openSeriesModal(stack) {
 const root = this.container;
 root.innerHTML = ""; root.className = "eth-ui-wrapper";
 const ambientBg = root.createEl("div", { cls: "eth-ambient-bg" });
-let rawPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_CinemaOS_Lists"); 
+let rawPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists"); 
 const availableGenres = extractAllGenres(rawPages); 
 const techFilters = ['4K', 'HDR', 'IMAX', 'ATMOS'];
 
@@ -804,7 +804,7 @@ const navIsland = headerWrapper.createEl("div", { cls: "eth-nav-island floating-
 // LEFT: BRAND
 const navLeft = navIsland.createEl("div", { cls: "nav-grp start brand-area" });
 const logo = navLeft.createEl("div", { cls: "eth-logo-mini" }); logo.innerHTML = Icons.logo; 
-const brandTitle = navLeft.createEl("div", { cls: "eth-brand-title", text: "Cinema OS" });
+const brandTitle = navLeft.createEl("div", { cls: "eth-brand-title", text: "Book OS" });
 
 // CENTER: UNIFIED SEARCH & SEGMENTED CONTROL
 const navCenter = navIsland.createEl("div", { cls: "nav-grp center control-deck" });
