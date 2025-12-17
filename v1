@@ -744,7 +744,7 @@ function openSeriesModal(stack) {
         const labelText = isUserList ? "USER LIST" : "SERIES";
         
         let sidebarActions = `<div style="display:flex; gap:10px; margin-bottom:20px;">
-            <button id="btn-add-movie-sidebar" class="action-btn" style="flex:1;">+ Add Movie</button>
+            <button id="btn-add-movie-sidebar" class="action-btn" style="flex:1;">+ Add Book</button>
             ${isUserList 
                 ? `<button id="btn-edit-list" class="action-btn" style="width:50px; padding:0; display:flex; align-items:center; justify-content:center;">${Icons.edit}</button>` 
                 : `<button id="btn-edit-collection" class="action-btn" style="width:50px; padding:0; display:flex; align-items:center; justify-content:center;">${Icons.edit}</button>`
