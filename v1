@@ -694,7 +694,11 @@ function openMovieModal(m, parentStack = null) {
         backdrop.className = 'eth-modal-backdrop';
         const tropesHtml = m.tropes.length > 0 ? `<div class="eth-chips-grid">${m.tropes.slice(0, 12).map(c => `<div class="chip">● ${c}</div>`).join('')}</div>` : `<span class="muted-text">No tropes info.</span>`;
         const badgeHtml = m.badges.map(b => `<span class="badge">${b}</span>`).join('');
-        const logHtml = m.readDates.length > 0 ? `<div class="log-box"><div class="log-head">READING LOG</div>${m.readDates.map(d => `<div class="log-row"><span>${Icons.check}</span> ${d}</div>`).join('')}</div>` : '';
+        let logHtml = '';
+if (m.readDateObjs && m.readDateObjs.length > 0) {
+    const sortedLogs = [...m.readDateObjs].sort((a,b) => b - a).slice(0, 7);
+    logHtml = `<div class="log-box"><div class="log-head">READING LOG</div>${sortedLogs.map(d => `<div class="log-row"><span>${Icons.check}</span> ${formatDateDisplay(d)}</div>`).join('')}</div>`;
+}
         const prettyRuntime = formatDuration(m.pages);
         const dateAdded = m.created ? formatDateDisplay(m.created) : "Unknown";
         const backButton = parentStack ? `<button class="nav-btn back-btn" title="Go Back">${Icons.back} <span>Back</span></button>` : '';
