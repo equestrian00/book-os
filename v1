@@ -321,8 +321,19 @@ function getMovieData(page) {
     const p = page;
     const rawYear = p.year || p.Year || p.yil || p.release_date;
     const year = rawYear ? Number(String(rawYear).match(/\d{4}/)?.[0]) || 0 : 0;
-    const myScore = p.rating || 0; const lbScore = p.scoreLB || 0; const displayScore = Number(myScore) > 0 ? myScore : lbScore;
-    let created = p.created ? parseDateSafe(p.created) : new Date(p.file.ctime.ts); if (!created || isNaN(created.getTime())) created = new Date(p.file.ctime.ts);
+// New logic to handle both numbers and stars in the 'rating' field
+    let rawRating = p.rating || 0;
+    let myScore = 0;
+
+    if (typeof rawRating === 'string' && (rawRating.includes('★') || rawRating.includes('☆'))) {
+        // Count only the solid stars to get the numeric value
+        myScore = (rawRating.match(/★/g) || []).length;
+    } else {
+        myScore = Number(rawRating) || 0;
+    }
+
+    const lbScore = p.scoreLB || 0;
+    const displayScore = Number(myScore) > 0 ? myScore : lbScore;    let created = p.created ? parseDateSafe(p.created) : new Date(p.file.ctime.ts); if (!created || isNaN(created.getTime())) created = new Date(p.file.ctime.ts);
     let released = p.release_date || p.released; if (released) released = parseDateSafe(released); if (!released) released = new Date(year, 0, 1); 
     let genreList = p.genre ? (Array.isArray(p.genre) ? p.genre : String(p.genre).split(',')) : (p.tags || []);
     genreList = genreList.map(cleanText).filter(g => g && !['movie','film','watched','izlendi'].includes(g.toLowerCase()));
