@@ -92,7 +92,10 @@ function formatLongDuration(pages) {
     return pages ? `${pages.toLocaleString()} total pages` : "0 pages"; 
 }
 function getBadges(p) { const tags = (Array.isArray(p.tags) ? p.tags.join(' ') : (p.tags||'')) + ' ' + (p.quality||'') + ' ' + (p.tech||''); const lower = tags.toLowerCase(); const badges = []; if (lower.includes('4k') || lower.includes('uhd')) badges.push('4K'); if (lower.includes('hdr')) badges.push('HDR'); if (lower.includes('imax')) badges.push('IMAX'); if (lower.includes('atmos')) badges.push('ATMOS'); return badges; }
-
+function formatDuration(raw) { 
+    if (!raw || raw === 0) return "No Data"; 
+    return `${raw} pages`; 
+}
 function parseDateSafe(input) { 
     if (!input) return null; 
     if (input.ts) return new Date(input.ts); 
@@ -356,7 +359,8 @@ function getMovieData(page) {
         file: p.file, title: p.file.name, path: p.file.path, 
         cover: finalCover, seriesCover: p.series_cover || null,
         year, released, score: Number(myScore), scoreLB: Number(lbScore), displayScore: Number(displayScore).toFixed(1),
-        pages: p.pageCount || 0, runtimeMins: parseInt(p.pageCount) || 0, // Keep runtimeMins as a name to avoid breaking other logic
+        pages: p.pageCount || 0, 
+    runtimeMins: parseInt(p.pageCount) || 0, // Keep runtimeMins as a name to avoid breaking other logic
         mainGenre, displayGenres, allGenres: genreList, author, cast, description: p.description || "No description available.", 
         status: p.status, series: cleanText(p.series) || null, created: created, color, badges: getBadges(p), 
         watchDates: formattedWatchDates, watchDateObjs: watchDates, userLists: userLists 
@@ -687,7 +691,7 @@ function openMovieModal(m, parentStack = null) {
         const castHtml = m.cast.length > 0 ? `<div class="eth-chips-grid">${m.cast.slice(0, 12).map(c => `<div class="chip">● ${c}</div>`).join('')}</div>` : `<span class="muted-text">No cast info.</span>`;
         const badgeHtml = m.badges.map(b => `<span class="badge">${b}</span>`).join('');
         const logHtml = m.watchDates.length > 0 ? `<div class="log-box"><div class="log-head">WATCH LOG</div>${m.watchDates.map(d => `<div class="log-row"><span>${Icons.check}</span> ${d}</div>`).join('')}</div>` : '';
-        const prettyRuntime = formatDuration(m.runtime);
+        const prettyRuntime = formatDuration(m.pages);
         const dateAdded = m.created ? formatDateDisplay(m.created) : "Unknown";
         const backButton = parentStack ? `<button class="nav-btn back-btn" title="Go Back">${Icons.back} <span>Back</span></button>` : '';
         const isWatched = m.status === CONFIG.statusWatched;
