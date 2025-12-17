@@ -801,9 +801,9 @@ const headerWrapper = root.createEl("div", { cls: "eth-header-wrapper" });
 const navIsland = headerWrapper.createEl("div", { cls: "eth-nav-island floating-hud" });
 
 // LEFT: BRAND
-const navLeft = navIsland.createEl("div", { cls: "nav-grp start brand-area" });
-const logo = navLeft.createEl("div", { cls: "eth-logo-mini" }); logo.innerHTML = Icons.logo; 
-const brandTitle = navLeft.createEl("div", { cls: "eth-brand-title", text: "Book OS" });
+// const navLeft = navIsland.createEl("div", { cls: "nav-grp start brand-area" });
+// const logo = navLeft.createEl("div", { cls: "eth-logo-mini" }); logo.innerHTML = Icons.logo; 
+// const brandTitle = navLeft.createEl("div", { cls: "eth-brand-title", text: "Book OS" });
 
 // CENTER: UNIFIED SEARCH & SEGMENTED CONTROL
 const navCenter = navIsland.createEl("div", { cls: "nav-grp center control-deck" });
@@ -827,11 +827,11 @@ const createSegBtn = (txt, id) => {
     }; 
     return btn; 
 };
-createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusRead); createSegBtn("Lists", 'lists');
+createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusRead); createSegBtn("Shelves", 'lists');
 
 // RIGHT: TOOLS
 const navRight = navIsland.createEl("div", { cls: "nav-grp end tool-kit" });
-const btnRandom = navRight.createEl("button", { cls: "eth-hud-btn icon-only", title: "Shuffle / Random Movie" });
+const btnRandom = navRight.createEl("button", { cls: "eth-hud-btn icon-only", title: "Shuffle / Random Book" });
 btnRandom.innerHTML = Icons.dice;
 btnRandom.onclick = () => { const validMovies = rawPages.map(p => getMovieData(p)).filter(m => m.status !== CONFIG.statusRead); if(validMovies.length > 0) { const rand = validMovies[Math.floor(Math.random() * validMovies.length)]; openMovieModal(rand); } else { new Notice("No books to read!"); } };
 const statsBtn = navRight.createEl("button", { cls: "eth-hud-btn icon-only", title: "Analytics" });
