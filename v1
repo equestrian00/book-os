@@ -198,8 +198,8 @@ async function removeSeriesFromMovie(filePath, callback) {
     } catch (e) { console.error(e); new Notice("Failed to remove series."); }
 }
 
-// --- COLLECTION OPERATIONS ---
-async function updateCollectionDetails(oldName, newName, newCover) {
+// --- SERIES OPERATIONS ---
+async function updateSeriesDetails(oldName, newName, newCover) {
     const pages = dv.pages(CONFIG.folder).where(p => p.series === oldName);
     if (pages.length === 0) { new Notice("No books found in this series."); return; }
     
@@ -677,14 +677,14 @@ function openEditListModal(id, currentName, currentCover, currentDesc) {
     backdrop.querySelector('#btn-save-list').onclick = () => { const name = document.getElementById('list-name-input').value; const cover = document.getElementById('list-cover-input').value; const desc = document.getElementById('list-desc-input').value; if (!name) { new Notice("List name is required."); return; } updateListDetails(id, name, cover, desc); backdrop.classList.remove('active'); setTimeout(() => backdrop.remove(), 200); };
 }
 
-function openEditCollectionModal(currentName, currentCover) {
+function openEditSeriesModal(currentName, currentCover) {
     const backdrop = document.createElement('div');
     backdrop.className = 'eth-modal-backdrop';
     backdrop.innerHTML = `<div class="eth-modal-panel create-list-mode" style="z-index:2200"><div class="nav-btn close-btn">${Icons.close}</div><div class="create-form-container"><h2>EDIT SERIES</h2><div class="input-group"><label>SERIES NAME</label><input type="text" id="col-name-input" value="${currentName}"></div><div class="input-group"><label>COVER IMAGE (URL)</label><input type="text" id="col-cover-input" value="${currentCover || ''}" placeholder="Leave empty to use movie poster"></div><div class="input-group"><p style="font-size:0.75rem; color:#666;">Note: Renaming will update the 'series' field for all books in this series.</p></div><button id="btn-save-col" class="action-btn primary">SAVE CHANGES</button></div></div>`;
     document.body.appendChild(backdrop);
     requestAnimationFrame(() => backdrop.classList.add('active'));
     backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); backdrop.classList.remove('active'); setTimeout(() => backdrop.remove(), 200); };
-    backdrop.querySelector('#btn-save-col').onclick = () => { const name = document.getElementById('col-name-input').value; const cover = document.getElementById('col-cover-input').value; if (!name) { new Notice("Series name is required."); return; } updateCollectionDetails(currentName, name, cover); backdrop.classList.remove('active'); setTimeout(() => backdrop.remove(), 200); };
+    backdrop.querySelector('#btn-save-col').onclick = () => { const name = document.getElementById('col-name-input').value; const cover = document.getElementById('col-cover-input').value; if (!name) { new Notice("Series name is required."); return; } updateSeriesDetails(currentName, name, cover); backdrop.classList.remove('active'); setTimeout(() => backdrop.remove(), 200); };
 }
 
 function openMovieModal(m, parentStack = null) {
@@ -767,7 +767,7 @@ function openSeriesModal(stack) {
         const btnAddSidebar = backdrop.querySelector('#btn-add-movie-sidebar'); 
         const btnAddEmpty = backdrop.querySelector('#btn-add-movie-empty'); 
         const btnEditList = backdrop.querySelector('#btn-edit-list');
-        const btnEditCollection = backdrop.querySelector('#btn-edit-collection');
+        const btnEditSeries = backdrop.querySelector('#btn-edit-collection');
         
         const triggerAdd = () => openMovieSelectorModal(stack.title, async () => { 
             await renderApp(); 
@@ -786,7 +786,7 @@ function openSeriesModal(stack) {
         if (btnAddSidebar) btnAddSidebar.onclick = triggerAdd; 
         if (btnAddEmpty) btnAddEmpty.onclick = triggerAdd; 
         if (btnEditList) btnEditList.onclick = () => { openEditListModal(stack.id, stack.title, stack.cover, stack.desc); };
-        if (btnEditCollection) btnEditCollection.onclick = () => { openEditCollectionModal(stack.title, stack.movies[0].seriesCover); };
+        if (btnEditSeries) btnEditSeries.onclick = () => { openEditSeriesModal(stack.title, stack.movies[0].seriesCover); };
         
         backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); closeModal(); };
         backdrop.onclick = (e) => { if(e.target === backdrop) closeModal(); };
@@ -956,7 +956,7 @@ createDualSlider(rowRanges, "Personal Score", 0, 5, 0.1, "rangeMy");
 createDualSlider(rowRanges, "Publication Year", 1920, 2030, 1, "rangeYear");
 
 
-// GENRES & COLLECTIONS
+// GENRES & SERIES
 const vmGroup3 = menuContentGrid.createEl("div", { cls: "menu-group span-full" });
 vmGroup3.createEl("div", { cls: "menu-label", text: "FILTERS & GENRES" });
 const rowSpecial = vmGroup3.createEl("div", { cls: "chip-cloud special-row" });
