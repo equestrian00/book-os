@@ -9,7 +9,7 @@ const NO_POSTER_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 
 const CONFIG = {  
     folder: '"Books"', // Movie data file path
-    statusWatched: "read",  
+    statusRead: "read",  
     statusList: "unread",  
     imagePlaceholder: NO_POSTER_SVG,  
     listsDbPath: "" // Enter any file path
@@ -58,7 +58,7 @@ const Icons = {
     arrowUpDown: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>`,
     filter: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`,
     tag: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
-    rewatch: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`,
+    reread: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`,
     list: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>`,
     plus: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
     trash: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
@@ -114,7 +114,7 @@ async function updateFileStatus(filePath, newStatus) {
     try {
         await app.fileManager.processFrontMatter(file, (fm) => {
             fm.status = newStatus;
-            if (newStatus === CONFIG.statusWatched) {
+            if (newStatus === CONFIG.statusRead) {
                 const today = new Date().toISOString().split('T')[0];
                 if (!fm.readDate) fm.readDate = [today];
                 else if (Array.isArray(fm.readDate)) { if (!fm.readDate.includes(today)) fm.readDate.push(today); } 
@@ -126,13 +126,13 @@ async function updateFileStatus(filePath, newStatus) {
     } catch (e) { console.error(e); new Notice("Update failed."); }
 }
 
-async function addRewatchLog(filePath) {
+async function addRereadLog(filePath) {
     const file = app.vault.getAbstractFileByPath(filePath);
     if (!file) { new Notice("File not found!"); return; }
     try {
         await app.fileManager.processFrontMatter(file, (fm) => {
             const today = new Date().toISOString().split('T')[0];
-            fm.status = CONFIG.statusWatched; 
+            fm.status = CONFIG.statusRead; 
             if (!fm.readDate) fm.readDate = [today];
             else if (Array.isArray(fm.readDate)) fm.readDate.push(today);
             else fm.readDate = [fm.readDate, today];
@@ -285,13 +285,13 @@ function getSystemLists() {
 }
 
 function calculateAnalytics(pages) {
-    let totalWatched = 0; let totalMins = 0; let totalScore = 0; let scoreCount = 0;
+    let totalRead = 0; let totalMins = 0; let totalScore = 0; let scoreCount = 0;
     const genres = {}; const authors = {}; const actors = {}; const years = {};
     pages.forEach(p => {
         const m = getMovieData(p);
         const status = String(m.status || "").toLowerCase();
-        if (status.includes('read') || status.includes('izlendi') || m.watchDates.length > 0) {
-            totalWatched++; totalMins += (m.runtimeMins || 0);
+        if (status.includes('read') || status.includes('izlendi') || m.readDates.length > 0) {
+            totalRead++; totalMins += (m.runtimeMins || 0);
             if(m.score > 0) { totalScore += m.score; scoreCount++; }
             if(m.year) years[m.year] = (years[m.year] || 0) + 1;
             m.allGenres.forEach(g => { genres[g] = (genres[g] || 0) + 1; });
@@ -308,7 +308,7 @@ function calculateAnalytics(pages) {
 
     // SCALED: Get Top 8 items now instead of 5 for better filling
     return { 
-        totalWatched, totalDuration: formatLongDuration(totalMins), avgScore, topYear, 
+        totalRead, totalDuration: formatLongDuration(totalMins), avgScore, topYear, 
         topGenres: getTop(genres, 8), 
         topAuthors: getTop(authors, 8), 
         topActors: getTop(actors, 8) 
@@ -334,7 +334,7 @@ function getMovieData(page) {
     const displayScore = Number(myScore) > 0 ? myScore : lbScore;    let created = p.created ? parseDateSafe(p.created) : new Date(p.file.ctime.ts); if (!created || isNaN(created.getTime())) created = new Date(p.file.ctime.ts);
     let released = p.release_date || p.released; if (released) released = parseDateSafe(released); if (!released) released = new Date(year, 0, 1); 
     let genreList = p.genre ? (Array.isArray(p.genre) ? p.genre : String(p.genre).split(',')) : (p.tags || []);
-    genreList = genreList.map(cleanText).filter(g => g && !['movie','film','watched','izlendi'].includes(g.toLowerCase()));
+    genreList = genreList.map(cleanText).filter(g => g && !['movie','film','read','izlendi'].includes(g.toLowerCase()));
     let userLists = [];
     if (p.lists) {
         let rawLists = Array.isArray(p.lists) ? p.lists : String(p.lists).split(',');
@@ -346,14 +346,14 @@ function getMovieData(page) {
     const color = GenreColors[rawMainGenre] || GenreColors[rawMainGenre.split(' ')[0]] || GenreColors["default"];
     const author = cleanText(p.author) || "Unknown";
     const cast = p.cast ? (Array.isArray(p.cast) ? p.cast.map(cleanText) : [cleanText(p.cast)]) : [];
-    let watchDates = [];
+    let readDates = [];
     if (p.readDate) {
         let rawLogs = p.readDate;
         if (typeof rawLogs === 'string' && rawLogs.includes(',')) rawLogs = rawLogs.split(',').map(s => s.trim()); else if (!Array.isArray(rawLogs)) rawLogs = [rawLogs];
-        watchDates = rawLogs.map(l => parseDateSafe(l)).filter(d => d !== null);
+        readDates = rawLogs.map(l => parseDateSafe(l)).filter(d => d !== null);
     }
-    if (watchDates.length === 0 && p.status === CONFIG.statusWatched) watchDates.push(created);
-    const formattedWatchDates = watchDates.map(d => formatDateDisplay(d));
+    if (readDates.length === 0 && p.status === CONFIG.statusRead) readDates.push(created);
+    const formattedReadDates = readDates.map(d => formatDateDisplay(d));
     let finalCover = p.cover; if (!finalCover || finalCover.length < 5) finalCover = CONFIG.imagePlaceholder;
     return {
         file: p.file, title: p.file.name, path: p.file.path, 
@@ -363,7 +363,7 @@ function getMovieData(page) {
     runtimeMins: parseInt(p.pageCount) || 0, // Keep runtimeMins as a name to avoid breaking other logic
         mainGenre, displayGenres, allGenres: genreList, author, cast, description: p.description || "No description available.", 
         status: p.status, series: cleanText(p.series) || null, created: created, color, badges: getBadges(p), 
-        watchDates: formattedWatchDates, watchDateObjs: watchDates, userLists: userLists 
+        readDates: formattedReadDates, readDateObjs: readDates, userLists: userLists 
     };
 }
 
@@ -371,7 +371,7 @@ function extractAllGenres(pages) {
     const genreSet = new Set();
     pages.forEach(p => {
         let genreList = p.genre ? (Array.isArray(p.genre) ? p.genre : String(p.genre).split(',')) : (p.tags || []);
-        genreList.map(cleanText).filter(g => g && !['movie','film','watched','izlendi'].includes(g.toLowerCase())).forEach(g => genreSet.add(g));
+        genreList.map(cleanText).filter(g => g && !['movie','film','read','izlendi'].includes(g.toLowerCase())).forEach(g => genreSet.add(g));
     });
     return Array.from(genreSet).sort();
 }
@@ -379,16 +379,16 @@ function extractAllGenres(pages) {
 function processUserLists(pages) {
     const listMap = {};
     const systemLists = getSystemLists(); 
-    systemLists.forEach(l => { if(l.name === "[object Object]") return; listMap[l.name] = { name: l.name, id: l.id, movies: [], totalRuntime: 0, watchedCount: 0, meta: l }; });
+    systemLists.forEach(l => { if(l.name === "[object Object]") return; listMap[l.name] = { name: l.name, id: l.id, movies: [], totalRuntime: 0, readCount: 0, meta: l }; });
     pages.forEach(p => {
         const m = getMovieData(p);
         if (m.userLists && m.userLists.length > 0) {
             m.userLists.forEach(listName => {
                 if (!listName || listName === "[object Object]") return;
-                if (!listMap[listName]) { listMap[listName] = { name: listName, id: null, movies: [], totalRuntime: 0, watchedCount: 0, meta: {} }; }
+                if (!listMap[listName]) { listMap[listName] = { name: listName, id: null, movies: [], totalRuntime: 0, readCount: 0, meta: {} }; }
                 listMap[listName].movies.push(m);
                 listMap[listName].totalRuntime += m.runtimeMins;
-                if(m.status === CONFIG.statusWatched) listMap[listName].watchedCount++;
+                if(m.status === CONFIG.statusRead) listMap[listName].readCount++;
             });
         }
     });
@@ -398,7 +398,7 @@ function processUserLists(pages) {
         if (!cover) cover = CONFIG.imagePlaceholder;
         return {
             type: 'userList', id: l.id, title: l.name, count: l.movies.length,
-            watched: l.watchedCount, progress: l.movies.length > 0 ? Math.round((l.watchedCount / l.movies.length) * 100) : 0,
+            read: l.readCount, progress: l.movies.length > 0 ? Math.round((l.readCount / l.movies.length) * 100) : 0,
             movies: l.movies, cover: cover, desc: l.meta.desc || "",
             totalRuntime: formatTotalRuntime(l.totalRuntime), avgScore: l.movies.length > 0 ? (l.movies.reduce((acc, m) => acc + m.score, 0) / l.movies.length).toFixed(1) : "-",
             avgLB: l.movies.length > 0 ? (l.movies.reduce((acc, m) => acc + m.scoreLB, 0) / l.movies.length).toFixed(1) : "-", color: "#ec4899" 
@@ -410,8 +410,8 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
     if (state.filter === 'lists') { return [{ type: 'createListCard' }, ...processUserLists(pages)]; }
     if (viewMode === 'timeline') return null;
     let processedPages = pages;
-    if (state.filter === CONFIG.statusWatched) processedPages = pages.where(p => p.status === CONFIG.statusWatched);
-    else if (state.filter === 'list') processedPages = pages.where(p => !p.status || p.status !== CONFIG.statusWatched); 
+    if (state.filter === CONFIG.statusRead) processedPages = pages.where(p => p.status === CONFIG.statusRead);
+    else if (state.filter === 'list') processedPages = pages.where(p => !p.status || p.status !== CONFIG.statusRead); 
     
     // FILTERS: GENRES + TECH + SCORE (DUAL) + YEAR (DUAL)
     processedPages = processedPages.where(p => {
@@ -446,12 +446,12 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
             const specificCover = list.find(m => m.seriesCover);
             const stackCover = specificCover ? specificCover.seriesCover : list[0].cover;
             const rep = list[list.length-1];
-            const wC = list.filter(m => m.status === CONFIG.statusWatched).length;
+            const wC = list.filter(m => m.status === CONFIG.statusRead).length;
             let totalMins = 0; let totalScore = 0; let scoreCount = 0; let totalLB = 0; let lbCount = 0;
             list.forEach(m => { totalMins += m.runtimeMins || 0; if(m.score > 0) { totalScore += m.score; scoreCount++; } if(m.scoreLB > 0) { totalLB += m.scoreLB; lbCount++; } });
             stacks.push({ 
                 type: 'stack', title: name, count: list.length, 
-                watched: wC, progress: Math.round((wC/list.length)*100), 
+                read: wC, progress: Math.round((wC/list.length)*100), 
                 movies: list, cover: stackCover, sortKey: rep, color: rep.color,
                 totalRuntime: formatTotalRuntime(totalMins), avgScore: scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : "-", avgLB: lbCount > 0 ? (totalLB / lbCount).toFixed(1) : "-"
             });
@@ -521,7 +521,7 @@ function openAnalyticsModal() {
                 <!-- HERO CARDS -->
                 <div class="stats-hero-grid">
                     <div class="stat-hero-card">
-                        <div class="shc-val">${data.totalWatched}</div>
+                        <div class="shc-val">${data.totalRead}</div>
                         <div class="shc-label">MOVIES</div>
                     </div>
                     <div class="stat-hero-card">
@@ -690,20 +690,20 @@ function openMovieModal(m, parentStack = null) {
         backdrop.className = 'eth-modal-backdrop';
         const castHtml = m.cast.length > 0 ? `<div class="eth-chips-grid">${m.cast.slice(0, 12).map(c => `<div class="chip">● ${c}</div>`).join('')}</div>` : `<span class="muted-text">No cast info.</span>`;
         const badgeHtml = m.badges.map(b => `<span class="badge">${b}</span>`).join('');
-        const logHtml = m.watchDates.length > 0 ? `<div class="log-box"><div class="log-head">READING LOG</div>${m.watchDates.map(d => `<div class="log-row"><span>${Icons.check}</span> ${d}</div>`).join('')}</div>` : '';
+        const logHtml = m.readDates.length > 0 ? `<div class="log-box"><div class="log-head">READING LOG</div>${m.readDates.map(d => `<div class="log-row"><span>${Icons.check}</span> ${d}</div>`).join('')}</div>` : '';
         const prettyRuntime = formatDuration(m.pages);
         const dateAdded = m.created ? formatDateDisplay(m.created) : "Unknown";
         const backButton = parentStack ? `<button class="nav-btn back-btn" title="Go Back">${Icons.back} <span>Back</span></button>` : '';
-        const isWatched = m.status === CONFIG.statusWatched;
-        const btnStatusHtml = `<div class="status-control-row"><button id="btn-status-toggle" class="status-indicator ${isWatched ? 'watched' : 'list'}" data-path="${m.path}">${isWatched ? 'READ' : 'TO BE READ'}</button><button id="btn-rewatch" class="rewatch-btn" title="Logged Re-Read">${Icons.rewatch}</button></div>`;
+        const isRead = m.status === CONFIG.statusRead;
+        const btnStatusHtml = `<div class="status-control-row"><button id="btn-status-toggle" class="status-indicator ${isRead ? 'read' : 'list'}" data-path="${m.path}">${isRead ? 'READ' : 'TO BE READ'}</button><button id="btn-reread" class="reread-btn" title="Logged Re-Read">${Icons.reread}</button></div>`;
         backdrop.innerHTML = `<div class="eth-modal-panel movie-mode wide-screen"><div class="panel-bg" style="background-image: url('${m.cover}')"></div><div class="panel-overlay"></div><div class="panel-nav">${backButton}<button class="nav-btn close-btn">${Icons.close}</button></div><div class="panel-content"><div class="p-col-left"><img src="${m.cover}" class="poster-frame" />${m.score > 0 ? `<div class="poster-rating-badge"><span class="pr-label">MY RATING</span><div class="pr-val">${Icons.star} ${m.score}</div></div>` : ''}</div><div class="p-col-center"><div class="meta-tags-hero">${m.displayGenres.split('•').map(g => `<span class="hero-tag">${g.trim()}</span>`).join('')}</div><h1 class="movie-title">${m.title}</h1><div class="info-grid"><div class="info-item"><span class="ii-label">PAGES</span><span class="ii-val">${prettyRuntime}</span></div><div class="info-item"><span class="ii-label">YEAR</span><span class="ii-val">${m.year}</span></div><div class="info-item"><span class="ii-label">GENRE</span><span class="ii-val" style="color:${m.color}">${m.mainGenre}</span></div></div><div class="eth-plot-box"><p class="movie-plot">${m.description}</p></div><div class="section-title">CAST</div>${castHtml}</div><div class="p-col-right"><div class="ticket-card full-info"><div class="tc-header" style="background:${m.color}">BOOK TICKET</div><div class="tc-body"><div class="tc-data-group"><div class="tc-row signature-row"><span>AUTHOR</span><div class="director-sign">${m.author}</div></div><div class="tc-row"><span>RELEASE DATE</span><b>${m.year}</b></div><div class="tc-row"><span>DATE ADDED</span><b>${dateAdded}</b></div><div class="tc-row"><span>QUALITY</span><div class="tc-badges-inline">${badgeHtml || '<span class="muted-badge">-</span>'}</div></div></div><div class="tc-separator"></div><div class="tc-status-area">${btnStatusHtml}${logHtml}</div></div><div class="tc-footer"><div class="barcode-mini">${Icons.barcode}</div><button id="btn-open-note" class="action-btn">OPEN NOTE</button></div></div></div></div></div>`;
         document.body.appendChild(backdrop);
         requestAnimationFrame(() => backdrop.classList.add('active'));
         backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); closeModal(); };
         backdrop.onclick = (e) => { if(e.target === backdrop) closeModal(); };
         backdrop.querySelector('#btn-open-note').onclick = (e) => { e.stopPropagation(); closeModal(); app.workspace.openLinkText(m.file.path, currentFilePath); };
-        const btnToggle = backdrop.querySelector('#btn-status-toggle'); btnToggle.onclick = async (e) => { e.stopPropagation(); const newStatus = m.status === CONFIG.statusWatched ? CONFIG.statusList : CONFIG.statusWatched; btnToggle.textContent = "Updating..."; btnToggle.style.opacity = "0.7"; await updateFileStatus(m.path, newStatus); closeModal(); };
-        const btnRewatch = backdrop.querySelector('#btn-rewatch'); btnRewatch.onclick = async (e) => { e.stopPropagation(); btnRewatch.innerHTML = Icons.check; await addRewatchLog(m.path); closeModal(); };
+        const btnToggle = backdrop.querySelector('#btn-status-toggle'); btnToggle.onclick = async (e) => { e.stopPropagation(); const newStatus = m.status === CONFIG.statusRead ? CONFIG.statusList : CONFIG.statusRead; btnToggle.textContent = "Updating..."; btnToggle.style.opacity = "0.7"; await updateFileStatus(m.path, newStatus); closeModal(); };
+        const btnReread = backdrop.querySelector('#btn-reread'); btnReread.onclick = async (e) => { e.stopPropagation(); btnReread.innerHTML = Icons.check; await addRereadLog(m.path); closeModal(); };
         if(parentStack) { backdrop.querySelector('.back-btn').onclick = (e) => { e.stopPropagation(); closeModal(); setTimeout(() => openSeriesModal(parentStack), 250); }; }
     }, 50);
 }
@@ -730,7 +730,7 @@ function openSeriesModal(stack) {
                     <div class="eth-card-meta"><div class="title" style="font-size:0.8rem;">${m.title}</div></div>
                 </div>`).join('') + `</div>`;
             } else {
-                contentHtml = stack.movies.map((m, i) => `<div class="collection-row" data-idx="${i}"><div class="cr-left"><div class="cr-index">${i + 1}</div><div class="cr-poster" style="background-image: url('${m.cover}')"></div></div><div class="cr-mid"><div class="cr-head"><div class="cr-title">${m.title}</div><div class="cr-year">${m.year}</div></div><div class="cr-plot">${m.description.substring(0, 110)}${m.description.length > 110 ? '...' : ''}</div><div class="cr-tags"><span class="pill time">${formatDuration(m.runtime)}</span>${m.score > 0 ? `<span class="pill star">★ ${m.score}</span>` : ''}</div></div><div class="cr-right"><div class="cr-status-icon ${m.status === CONFIG.statusWatched ? 'is-watched' : ''}">${m.status === CONFIG.statusWatched ? Icons.check : Icons.play}</div><div class="cr-remove-btn" title="Remove" onclick="removeMovieHandler(event, '${m.path}', '${stack.title}', ${isUserList})">${Icons.trash}</div></div></div>`).join('');
+                contentHtml = stack.movies.map((m, i) => `<div class="collection-row" data-idx="${i}"><div class="cr-left"><div class="cr-index">${i + 1}</div><div class="cr-poster" style="background-image: url('${m.cover}')"></div></div><div class="cr-mid"><div class="cr-head"><div class="cr-title">${m.title}</div><div class="cr-year">${m.year}</div></div><div class="cr-plot">${m.description.substring(0, 110)}${m.description.length > 110 ? '...' : ''}</div><div class="cr-tags"><span class="pill time">${formatDuration(m.runtime)}</span>${m.score > 0 ? `<span class="pill star">★ ${m.score}</span>` : ''}</div></div><div class="cr-right"><div class="cr-status-icon ${m.status === CONFIG.statusRead ? 'is-read' : ''}">${m.status === CONFIG.statusRead ? Icons.check : Icons.play}</div><div class="cr-remove-btn" title="Remove" onclick="removeMovieHandler(event, '${m.path}', '${stack.title}', ${isUserList})">${Icons.trash}</div></div></div>`).join('');
             }
         }
         const labelText = isUserList ? "USER LIST" : "COLLECTION";
@@ -746,7 +746,7 @@ function openSeriesModal(stack) {
         const viewToggleBtn = `<button class="nav-btn view-toggle-btn" title="Toggle View" style="position:absolute; top:30px; right:40px; z-index:50;">${isGrid ? Icons.list : Icons.grid}</button>`;
         
         // REMOVED <span class="cl-h-count">...</span> from header to clean up UI
-        backdrop.innerHTML = `<div class="eth-modal-panel collection-mode"><div class="panel-bg" style="background-image: url('${stack.cover}')"></div><div class="panel-overlay"></div><button class="nav-btn close-btn floating" style="z-index:51;">${Icons.close}</button>${viewToggleBtn}<div class="collection-layout"><div class="cl-sidebar"><div class="cl-poster-wrapper"><div class="cl-poster-card"><div class="cl-poster" style="background-image: url('${stack.cover}')"></div><div class="cl-tag">${labelText}</div></div></div><div class="cl-meta-block"><h1 class="cl-title">${stack.title}</h1>${sidebarActions}<div class="cl-stats-grid"><div class="cl-stat-box"><div class="cl-stat-icon">${Icons.clock}</div><div class="cl-stat-val">${stack.totalRuntime}</div><div class="cl-stat-label">Pages</div></div><div class="cl-stat-box"><div class="cl-stat-icon">${Icons.star}</div><div class="cl-stat-val">${stack.avgScore}</div><div class="cl-stat-label">Score</div></div>${!isUserList ? `<div class="cl-stat-box"><div class="cl-stat-icon">${Icons.chart}</div><div class="cl-stat-val">${stack.avgLB}</div><div class="cl-stat-label">LB</div></div>` : ''}</div><div class="cl-progress-card"><div class="stat-row"><span>Progress</span><b>${stack.watched} / ${stack.count}</b></div><div class="stat-bar"><div class="stat-fill" style="width:${stack.progress}%; background:${stack.color}"></div></div></div></div></div><div class="cl-content-wrapper"><div class="cl-header-sticky"><span class="cl-h-title">MOVIE LIST</span></div><div class="cl-scroll-area ${isGrid ? 'grid-layout' : 'list-layout'}">${contentHtml}</div></div></div></div>`;
+        backdrop.innerHTML = `<div class="eth-modal-panel collection-mode"><div class="panel-bg" style="background-image: url('${stack.cover}')"></div><div class="panel-overlay"></div><button class="nav-btn close-btn floating" style="z-index:51;">${Icons.close}</button>${viewToggleBtn}<div class="collection-layout"><div class="cl-sidebar"><div class="cl-poster-wrapper"><div class="cl-poster-card"><div class="cl-poster" style="background-image: url('${stack.cover}')"></div><div class="cl-tag">${labelText}</div></div></div><div class="cl-meta-block"><h1 class="cl-title">${stack.title}</h1>${sidebarActions}<div class="cl-stats-grid"><div class="cl-stat-box"><div class="cl-stat-icon">${Icons.clock}</div><div class="cl-stat-val">${stack.totalRuntime}</div><div class="cl-stat-label">Pages</div></div><div class="cl-stat-box"><div class="cl-stat-icon">${Icons.star}</div><div class="cl-stat-val">${stack.avgScore}</div><div class="cl-stat-label">Score</div></div>${!isUserList ? `<div class="cl-stat-box"><div class="cl-stat-icon">${Icons.chart}</div><div class="cl-stat-val">${stack.avgLB}</div><div class="cl-stat-label">LB</div></div>` : ''}</div><div class="cl-progress-card"><div class="stat-row"><span>Progress</span><b>${stack.read} / ${stack.count}</b></div><div class="stat-bar"><div class="stat-fill" style="width:${stack.progress}%; background:${stack.color}"></div></div></div></div></div><div class="cl-content-wrapper"><div class="cl-header-sticky"><span class="cl-h-title">MOVIE LIST</span></div><div class="cl-scroll-area ${isGrid ? 'grid-layout' : 'list-layout'}">${contentHtml}</div></div></div></div>`;
         document.body.appendChild(backdrop);
         requestAnimationFrame(() => backdrop.classList.add('active'));
         backdrop.querySelector('.view-toggle-btn').onclick = (e) => { e.stopPropagation(); state.innerViewMode = state.innerViewMode === 'grid' ? 'list' : 'grid'; closeModal(); setTimeout(() => openSeriesModal(stack), 250); };
@@ -827,13 +827,13 @@ const createSegBtn = (txt, id) => {
     }; 
     return btn; 
 };
-createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusWatched); createSegBtn("Lists", 'lists');
+createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusRead); createSegBtn("Lists", 'lists');
 
 // RIGHT: TOOLS
 const navRight = navIsland.createEl("div", { cls: "nav-grp end tool-kit" });
 const btnRandom = navRight.createEl("button", { cls: "eth-hud-btn icon-only", title: "Shuffle / Random Movie" });
 btnRandom.innerHTML = Icons.dice;
-btnRandom.onclick = () => { const validMovies = rawPages.map(p => getMovieData(p)).filter(m => m.status !== CONFIG.statusWatched); if(validMovies.length > 0) { const rand = validMovies[Math.floor(Math.random() * validMovies.length)]; openMovieModal(rand); } else { new Notice("No books to read!"); } };
+btnRandom.onclick = () => { const validMovies = rawPages.map(p => getMovieData(p)).filter(m => m.status !== CONFIG.statusRead); if(validMovies.length > 0) { const rand = validMovies[Math.floor(Math.random() * validMovies.length)]; openMovieModal(rand); } else { new Notice("No books to read!"); } };
 const statsBtn = navRight.createEl("button", { cls: "eth-hud-btn icon-only", title: "Analytics" });
 statsBtn.innerHTML = Icons.stats;
 statsBtn.onclick = () => openAnalyticsModal();
@@ -1029,7 +1029,7 @@ sliderInput.oninput = (e) => { state.gridSize = e.target.value; contentArea.styl
 contentArea.style.setProperty('--grid-size', `${state.gridSize}px`);
 const debouncedRender = debounce(() => renderApp(), 300); 
 
-function renderTimeline(pages) { const timelineEvents = []; pages.forEach(p => { const m = getMovieData(p); if (m.watchDateObjs.length > 0) m.watchDateObjs.forEach(date => timelineEvents.push({ date: date, movie: m, isReadDate: true })); else if (m.status === CONFIG.statusWatched && m.created) timelineEvents.push({ date: m.created, movie: m, isReadDate: false }); }); timelineEvents.sort((a, b) => b.date - a.date); if (timelineEvents.length === 0) return `<div class="eth-empty-state">No timeline data available.</div>`; let html = `<div class="eth-timeline-stream">`; let currentGroup = ""; timelineEvents.forEach(ev => { const key = ev.date.toLocaleString('en-US', { month: 'long', year: 'numeric' }); if (key !== currentGroup) { if (currentGroup !== "") html += `</div></div>`; html += `<div class="stream-group"><div class="stream-header"><span class="sh-dot"></span> ${key}</div><div class="stream-grid">`; currentGroup = key; } const dayNumber = ev.date.getDate(); const dayName = ev.date.toLocaleDateString('en-US', { weekday: 'short' }); html += `<div class="stream-card" onclick="openMovieModalFromTimeline('${ev.movie.file.path}')"><div class="st-poster" style="background-image: url('${ev.movie.cover}')"><div class="st-date-badge"><b>${dayNumber}</b><span>${dayName}</span></div></div><div class="st-info"><div class="st-title">${ev.movie.title}</div><div class="st-meta">${ev.movie.year} • <span style="color:${ev.movie.color}">${ev.movie.mainGenre}</span></div><div class="st-rating">${ev.movie.score > 0 ? '★ ' + ev.movie.score : ''}</div></div></div>`; }); html += `</div></div></div>`; return html; }
+function renderTimeline(pages) { const timelineEvents = []; pages.forEach(p => { const m = getMovieData(p); if (m.readDateObjs.length > 0) m.readDateObjs.forEach(date => timelineEvents.push({ date: date, movie: m, isReadDate: true })); else if (m.status === CONFIG.statusRead && m.created) timelineEvents.push({ date: m.created, movie: m, isReadDate: false }); }); timelineEvents.sort((a, b) => b.date - a.date); if (timelineEvents.length === 0) return `<div class="eth-empty-state">No timeline data available.</div>`; let html = `<div class="eth-timeline-stream">`; let currentGroup = ""; timelineEvents.forEach(ev => { const key = ev.date.toLocaleString('en-US', { month: 'long', year: 'numeric' }); if (key !== currentGroup) { if (currentGroup !== "") html += `</div></div>`; html += `<div class="stream-group"><div class="stream-header"><span class="sh-dot"></span> ${key}</div><div class="stream-grid">`; currentGroup = key; } const dayNumber = ev.date.getDate(); const dayName = ev.date.toLocaleDateString('en-US', { weekday: 'short' }); html += `<div class="stream-card" onclick="openMovieModalFromTimeline('${ev.movie.file.path}')"><div class="st-poster" style="background-image: url('${ev.movie.cover}')"><div class="st-date-badge"><b>${dayNumber}</b><span>${dayName}</span></div></div><div class="st-info"><div class="st-title">${ev.movie.title}</div><div class="st-meta">${ev.movie.year} • <span style="color:${ev.movie.color}">${ev.movie.mainGenre}</span></div><div class="st-rating">${ev.movie.score > 0 ? '★ ' + ev.movie.score : ''}</div></div></div>`; }); html += `</div></div></div>`; return html; }
 window.openMovieModalFromTimeline = (path) => { const page = app.metadataCache.getFirstLinkpathDest(path, ""); const m = getMovieData({file: page, ...dv.page(path)}); openMovieModal(m); };
 
 function renderApp() { 
@@ -1069,7 +1069,7 @@ function renderApp() {
                     <div class="stack-glass-bar">
                         <div class="sgb-info">
                             <span>${Icons.layers} ${item.count} Movies</span>
-                            <span class="sgb-count">${item.watched}/${item.count}</span>
+                            <span class="sgb-count">${item.read}/${item.count}</span>
                         </div>
                         <div class="sgb-track">
                             <div class="sgb-fill" style="width: ${item.progress}%; background:${item.color}"></div>
