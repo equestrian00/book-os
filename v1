@@ -164,7 +164,7 @@ async function addSeriesToMovie(filePath, seriesName, callback) {
         });
         new Notice(`Added to "${seriesName}".`);
         if (callback) callback();
-    } catch (e) { console.error(e); new Notice("Failed to add to collection."); }
+    } catch (e) { console.error(e); new Notice("Failed to add to series."); }
 }
 
 async function removeListFromMovie(filePath, listName, callback) {
@@ -192,7 +192,7 @@ async function removeSeriesFromMovie(filePath, callback) {
         await app.fileManager.processFrontMatter(file, (fm) => {
             fm.series = null; 
         });
-        new Notice(`Removed from collection.`);
+        new Notice(`Removed from series.`);
         if (callback) callback();
     } catch (e) { console.error(e); new Notice("Failed to remove series."); }
 }
@@ -200,7 +200,7 @@ async function removeSeriesFromMovie(filePath, callback) {
 // --- COLLECTION OPERATIONS ---
 async function updateCollectionDetails(oldName, newName, newCover) {
     const pages = dv.pages(CONFIG.folder).where(p => p.series === oldName);
-    if (pages.length === 0) { new Notice("No movies found in this collection."); return; }
+    if (pages.length === 0) { new Notice("No books found in this series."); return; }
     
     let updatedCount = 0;
     for (let p of pages) {
@@ -215,7 +215,7 @@ async function updateCollectionDetails(oldName, newName, newCover) {
     }
     
     if (updatedCount > 0) {
-        new Notice(`Updated ${updatedCount} movies in collection.`);
+        new Notice(`Updated ${updatedCount} books in series.`);
         closeModal();
         setTimeout(() => renderApp(), 600); 
     }
@@ -419,7 +419,7 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
         
         // 1. Category/Genre/Tech Filter
         let matchCat = true;
-        if (categoryMode !== 'all' && categoryMode !== 'collections') {
+        if (categoryMode !== 'all' && categoryMode !== 'series') {
             let checkList = [...m.allGenres, ...m.badges];
             matchCat = checkList.includes(categoryMode);
         }
@@ -458,7 +458,7 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
         } else { singles.push({ type: 'movie', data: list[0] }); }
     }
     let allItems = [...stacks, ...singles];
-    if (categoryMode === 'collections') allItems = allItems.filter(item => item.type === 'stack');
+    if (categoryMode === 'series') allItems = allItems.filter(item => item.type === 'stack');
     allItems.sort((a, b) => {
         const getVal = (item) => { 
             const d = item.type === 'stack' || item.type === 'userList' ? (item.sortKey || item) : item.data; 
@@ -676,11 +676,11 @@ function openEditListModal(id, currentName, currentCover, currentDesc) {
 function openEditCollectionModal(currentName, currentCover) {
     const backdrop = document.createElement('div');
     backdrop.className = 'eth-modal-backdrop';
-    backdrop.innerHTML = `<div class="eth-modal-panel create-list-mode" style="z-index:2200"><div class="nav-btn close-btn">${Icons.close}</div><div class="create-form-container"><h2>EDIT COLLECTION</h2><div class="input-group"><label>COLLECTION NAME</label><input type="text" id="col-name-input" value="${currentName}"></div><div class="input-group"><label>COVER IMAGE (URL)</label><input type="text" id="col-cover-input" value="${currentCover || ''}" placeholder="Leave empty to use movie poster"></div><div class="input-group"><p style="font-size:0.75rem; color:#666;">Note: Renaming will update the 'series' field for all movies in this collection.</p></div><button id="btn-save-col" class="action-btn primary">SAVE CHANGES</button></div></div>`;
+    backdrop.innerHTML = `<div class="eth-modal-panel create-list-mode" style="z-index:2200"><div class="nav-btn close-btn">${Icons.close}</div><div class="create-form-container"><h2>EDIT SERIES</h2><div class="input-group"><label>SERIES NAME</label><input type="text" id="col-name-input" value="${currentName}"></div><div class="input-group"><label>COVER IMAGE (URL)</label><input type="text" id="col-cover-input" value="${currentCover || ''}" placeholder="Leave empty to use movie poster"></div><div class="input-group"><p style="font-size:0.75rem; color:#666;">Note: Renaming will update the 'series' field for all books in this series.</p></div><button id="btn-save-col" class="action-btn primary">SAVE CHANGES</button></div></div>`;
     document.body.appendChild(backdrop);
     requestAnimationFrame(() => backdrop.classList.add('active'));
     backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); backdrop.classList.remove('active'); setTimeout(() => backdrop.remove(), 200); };
-    backdrop.querySelector('#btn-save-col').onclick = () => { const name = document.getElementById('col-name-input').value; const cover = document.getElementById('col-cover-input').value; if (!name) { new Notice("Collection name is required."); return; } updateCollectionDetails(currentName, name, cover); backdrop.classList.remove('active'); setTimeout(() => backdrop.remove(), 200); };
+    backdrop.querySelector('#btn-save-col').onclick = () => { const name = document.getElementById('col-name-input').value; const cover = document.getElementById('col-cover-input').value; if (!name) { new Notice("Series name is required."); return; } updateCollectionDetails(currentName, name, cover); backdrop.classList.remove('active'); setTimeout(() => backdrop.remove(), 200); };
 }
 
 function openMovieModal(m, parentStack = null) {
@@ -733,7 +733,7 @@ function openSeriesModal(stack) {
                 contentHtml = stack.movies.map((m, i) => `<div class="collection-row" data-idx="${i}"><div class="cr-left"><div class="cr-index">${i + 1}</div><div class="cr-poster" style="background-image: url('${m.cover}')"></div></div><div class="cr-mid"><div class="cr-head"><div class="cr-title">${m.title}</div><div class="cr-year">${m.year}</div></div><div class="cr-plot">${m.description.substring(0, 110)}${m.description.length > 110 ? '...' : ''}</div><div class="cr-tags"><span class="pill time">${formatDuration(m.runtime)}</span>${m.score > 0 ? `<span class="pill star">★ ${m.score}</span>` : ''}</div></div><div class="cr-right"><div class="cr-status-icon ${m.status === CONFIG.statusRead ? 'is-read' : ''}">${m.status === CONFIG.statusRead ? Icons.check : Icons.play}</div><div class="cr-remove-btn" title="Remove" onclick="removeMovieHandler(event, '${m.path}', '${stack.title}', ${isUserList})">${Icons.trash}</div></div></div>`).join('');
             }
         }
-        const labelText = isUserList ? "USER LIST" : "COLLECTION";
+        const labelText = isUserList ? "USER LIST" : "SERIES";
         
         let sidebarActions = `<div style="display:flex; gap:10px; margin-bottom:20px;">
             <button id="btn-add-movie-sidebar" class="action-btn" style="flex:1;">+ Add Movie</button>
@@ -758,7 +758,7 @@ function openSeriesModal(stack) {
             });
         }
         window.openMovieModalFromSeries = (path, stackTitle) => { const page = app.metadataCache.getFirstLinkpathDest(path, ""); const m = getMovieData({file: page, ...dv.page(path)}); openMovieModal(m, stack); };
-        window.removeMovieHandler = async (e, path, stackName, isUserList) => { e.stopPropagation(); const msg = isUserList ? `Remove movie from "${stackName}"?` : `Remove movie from "${stackName}" collection?`; showCustomConfirm("REMOVE MOVIE", msg, async () => { const callback = async () => { await renderApp(); const allPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists"); let updatedStack; if (isUserList) { const updatedLists = processUserLists(allPages); updatedStack = updatedLists.find(l => l.title === stackName); } else { const items = processItems(allPages, state.sortMode, state.sortDir, state.viewMode, 'all'); updatedStack = items.find(i => i.type === 'stack' && i.title === stackName); } if(updatedStack) { closeModal(); setTimeout(() => openSeriesModal(updatedStack), 300); } else { closeModal(); renderApp(); } }; if (isUserList) { await removeListFromMovie(path, stackName, callback); } else { await removeSeriesFromMovie(path, callback); } }); };
+        window.removeMovieHandler = async (e, path, stackName, isUserList) => { e.stopPropagation(); const msg = isUserList ? `Remove book from "${stackName}"?` : `Remove book from "${stackName}" series?`; showCustomConfirm("REMOVE BOOK", msg, async () => { const callback = async () => { await renderApp(); const allPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists"); let updatedStack; if (isUserList) { const updatedLists = processUserLists(allPages); updatedStack = updatedLists.find(l => l.title === stackName); } else { const items = processItems(allPages, state.sortMode, state.sortDir, state.viewMode, 'all'); updatedStack = items.find(i => i.type === 'stack' && i.title === stackName); } if(updatedStack) { closeModal(); setTimeout(() => openSeriesModal(updatedStack), 300); } else { closeModal(); renderApp(); } }; if (isUserList) { await removeListFromMovie(path, stackName, callback); } else { await removeSeriesFromMovie(path, callback); } }); };
         
         const btnAddSidebar = backdrop.querySelector('#btn-add-movie-sidebar'); 
         const btnAddEmpty = backdrop.querySelector('#btn-add-movie-empty'); 
@@ -962,7 +962,7 @@ const createCatChip = (container, txt, id, isSpecial = false) => {
     btn.onclick = () => { state.categoryMode = id; updateMenuVisuals(); renderApp(); };
 };
 createCatChip(rowSpecial, "All", "all", true);
-createCatChip(rowSpecial, "Collections", "collections", true);
+createCatChip(rowSpecial, "Series", "series", true);
 techFilters.forEach(tf => createCatChip(rowSpecial, tf, tf));
 vmGroup3.createEl("div", { cls: "menu-separator" });
 const rowGenres = vmGroup3.createEl("div", { cls: "chip-cloud" });
@@ -1052,9 +1052,9 @@ function renderApp() {
             // IMPORTANT: Inject specific color variable for CSS to use on hover
             card.style.setProperty('--accent', item.color);
 
-            const badgeText = item.type === 'userList' ? 'LIST' : 'COLLECTION';
+            const badgeText = item.type === 'userList' ? 'LIST' : 'SERIES';
             const deleteBtn = item.type === 'userList' ? `<div class="stack-delete-btn" title="Delete Shelf">${Icons.trash}</div>` : '';
-            const subText = item.type === 'userList' ? (item.desc || '') : (item.desc || 'Series / Boxset');
+            const subText = item.type === 'userList' ? (item.desc || '') : (item.desc || 'Series');
 
             // SIMPLIFIED HTML: Removed stack-layer divs for cleaner classic look
             card.innerHTML = `
