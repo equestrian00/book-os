@@ -1,3 +1,4 @@
+
 ```dataviewjs
 // ==================================================
 // CINEMA OS: GLOBAL EDITION
@@ -287,7 +288,7 @@ function getSystemLists() {
 
 function calculateAnalytics(pages) {
     let totalWatched = 0; let totalMins = 0; let totalScore = 0; let scoreCount = 0;
-    const genres = {}; const directors = {}; const actors = {}; const years = {};
+    const genres = {}; const authors = {}; const actors = {}; const years = {};
     pages.forEach(p => {
         const m = getMovieData(p);
         const status = String(m.status || "").toLowerCase();
@@ -296,7 +297,7 @@ function calculateAnalytics(pages) {
             if(m.score > 0) { totalScore += m.score; scoreCount++; }
             if(m.year) years[m.year] = (years[m.year] || 0) + 1;
             m.allGenres.forEach(g => { genres[g] = (genres[g] || 0) + 1; });
-            if(m.director && m.director !== "Unknown") { let dirs = Array.isArray(m.director) ? m.director : String(m.director).split(',').map(s => s.trim()); dirs.forEach(d => { if(d) directors[d] = (directors[d] || 0) + 1; }); }
+            if(m.author && m.author !== "Unknown") { let dirs = Array.isArray(m.author) ? m.author : String(m.author).split(',').map(s => s.trim()); dirs.forEach(d => { if(d) authors[d] = (authors[d] || 0) + 1; }); }
             if(m.cast && m.cast.length > 0) { m.cast.forEach(a => { actors[a] = (actors[a] || 0) + 1; }); }
         }
     });
@@ -311,7 +312,7 @@ function calculateAnalytics(pages) {
     return { 
         totalWatched, totalDuration: formatLongDuration(totalMins), avgScore, topYear, 
         topGenres: getTop(genres, 8), 
-        topDirectors: getTop(directors, 8), 
+        topAuthors: getTop(authors, 8), 
         topActors: getTop(actors, 8) 
     };
 }
@@ -350,7 +351,7 @@ function getMovieData(page) {
         cover: finalCover, seriesCover: p.series_cover || null,
         year, released, score: Number(myScore), scoreLB: Number(lbScore), displayScore: Number(displayScore).toFixed(1),
         runtime: p.runtime || "No Data", runtimeMins: parseRuntime(p.runtime || p.duration), 
-        mainGenre, displayGenres, allGenres: genreList, director, cast, plot: p.plot || "No plot available.", 
+        mainGenre, displayGenres, allGenres: genreList, author, cast, plot: p.plot || "No plot available.", 
         status: p.status, series: cleanText(p.series) || null, created: created, color, badges: getBadges(p), 
         watchDates: formattedWatchDates, watchDateObjs: watchDates, userLists: userLists 
     };
@@ -546,11 +547,11 @@ function openAnalyticsModal() {
                         </div>
                     </div>
 
-                    <!-- COL 2: TOP DIRECTORS (RANK LIST) -->
+                    <!-- COL 2: TOP AUTHORS (RANK LIST) -->
                     <div class="stat-panel">
-                        <h3>TOP DIRECTORS</h3>
+                        <h3>TOP AUTHORS</h3>
                         <div class="simple-list">
-                            ${data.topDirectors.map((d,i) => `
+                            ${data.topAuthors.map((d,i) => `
                             <div class="sl-row">
                                 <span class="sl-rank">${i+1}</span>
                                 <span class="sl-name">${d[0]}</span>
@@ -1086,3 +1087,4 @@ function renderApp() {
     }); 
 }
 renderApp();
+```
