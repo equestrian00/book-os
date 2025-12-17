@@ -152,7 +152,7 @@ async function addListToMovie(filePath, listName, callback) {
             else { if (!String(fm.lists).includes(listName)) fm.lists = [fm.lists, listName]; }
         });
         if (callback) callback();
-    } catch (e) { console.error(e); new Notice("Failed to add to list."); }
+    } catch (e) { console.error(e); new Notice("Failed to add to shelf."); }
 }
 
 async function addSeriesToMovie(filePath, seriesName, callback) {
@@ -182,7 +182,7 @@ async function removeListFromMovie(filePath, listName, callback) {
         });
         new Notice(`Removed from "${listName}".`);
         if (callback) callback();
-    } catch (e) { console.error(e); new Notice("Failed to remove from list."); }
+    } catch (e) { console.error(e); new Notice("Failed to remove from shelf."); }
 }
 
 async function removeSeriesFromMovie(filePath, callback) {
@@ -231,10 +231,10 @@ async function createNewList(name, cover, desc) {
             const id = Date.now().toString();
             fm.lists.push({ id: id, name: name, cover: cover || "", desc: desc || "" });
         });
-        new Notice(`List "${name}" created!`);
+        new Notice(`Shelf "${name}" created!`);
         closeModal();
         setTimeout(() => renderApp(), 300);
-    } catch (e) { console.error(e); new Notice("Failed to create list."); }
+    } catch (e) { console.error(e); new Notice("Failed to create shelf."); }
 }
 
 async function updateListDetails(id, newName, newCover, newDesc) {
@@ -251,14 +251,14 @@ async function updateListDetails(id, newName, newCover, newDesc) {
                 }
             }
         });
-        new Notice("List updated!");
+        new Notice("Shelf updated!");
         closeModal();
         setTimeout(() => renderApp(), 300);
-    } catch (e) { console.error(e); new Notice("Failed to update list."); }
+    } catch (e) { console.error(e); new Notice("Failed to update shelf."); }
 }
 
 async function deleteList(listId, listName) {
-    showCustomConfirm("DELETE LIST", `Are you sure you want to delete "${listName}"? <br>This action cannot be undone.`, async () => {
+    showCustomConfirm("DELETE SHELF", `Are you sure you want to delete "${listName}"? <br>This action cannot be undone.`, async () => {
         const file = app.vault.getAbstractFileByPath(CONFIG.listsDbPath);
         if (!file) { new Notice("DB File missing!"); return; }
         try {
@@ -267,8 +267,8 @@ async function deleteList(listId, listName) {
                     let targetIdx = -1;
                     if (listId) { targetIdx = fm.lists.findIndex(l => String(l.id) === String(listId)); }
                     if (targetIdx === -1 && listName) { targetIdx = fm.lists.findIndex(l => l.name === listName); }
-                    if (targetIdx > -1) { fm.lists.splice(targetIdx, 1); new Notice(`List deleted.`); } 
-                    else { new Notice(`List not found.`); }
+                    if (targetIdx > -1) { fm.lists.splice(targetIdx, 1); new Notice(`Shelf deleted.`); } 
+                    else { new Notice(`Shelf not found.`); }
                 }
             });
             closeModal();
@@ -654,19 +654,19 @@ function openCreateListModal() {
     setTimeout(() => {
         const backdrop = document.createElement('div');
         backdrop.className = 'eth-modal-backdrop';
-        backdrop.innerHTML = `<div class="eth-modal-panel create-list-mode"><div class="nav-btn close-btn">${Icons.close}</div><div class="create-form-container"><h2>CREATE NEW LIST</h2><div class="input-group"><label>LIST NAME</label><input type="text" id="list-name-input" placeholder="e.g.: Horror Favorites"></div><div class="input-group"><label>COVER IMAGE (URL)</label><input type="text" id="list-cover-input" placeholder="https://..."></div><div class="input-group"><label>DESCRIPTION</label><textarea id="list-desc-input" rows="3" placeholder="What is this list about?"></textarea></div><button id="btn-create-list" class="action-btn primary">CREATE</button></div></div>`;
+        backdrop.innerHTML = `<div class="eth-modal-panel create-list-mode"><div class="nav-btn close-btn">${Icons.close}</div><div class="create-form-container"><h2>CREATE NEW SHELF</h2><div class="input-group"><label>SHELF NAME</label><input type="text" id="list-name-input" placeholder="e.g.: Horror Favorites"></div><div class="input-group"><label>COVER IMAGE (URL)</label><input type="text" id="list-cover-input" placeholder="https://..."></div><div class="input-group"><label>DESCRIPTION</label><textarea id="list-desc-input" rows="3" placeholder="What is this shelf about?"></textarea></div><button id="btn-create-list" class="action-btn primary">CREATE</button></div></div>`;
         document.body.appendChild(backdrop);
         requestAnimationFrame(() => backdrop.classList.add('active'));
         backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); closeModal(); };
         backdrop.onclick = (e) => { if(e.target === backdrop) closeModal(); };
-        backdrop.querySelector('#btn-create-list').onclick = () => { const name = document.getElementById('list-name-input').value; const cover = document.getElementById('list-cover-input').value; const desc = document.getElementById('list-desc-input').value; if (!name) { new Notice("Please enter a list name."); return; } createNewList(name, cover, desc); };
+        backdrop.querySelector('#btn-create-list').onclick = () => { const name = document.getElementById('list-name-input').value; const cover = document.getElementById('list-cover-input').value; const desc = document.getElementById('list-desc-input').value; if (!name) { new Notice("Please enter a shelf name."); return; } createNewList(name, cover, desc); };
     }, 50);
 }
 
 function openEditListModal(id, currentName, currentCover, currentDesc) {
     const backdrop = document.createElement('div');
     backdrop.className = 'eth-modal-backdrop';
-    backdrop.innerHTML = `<div class="eth-modal-panel create-list-mode" style="z-index:2200"><div class="nav-btn close-btn">${Icons.close}</div><div class="create-form-container"><h2>EDIT LIST</h2><div class="input-group"><label>LIST NAME</label><input type="text" id="list-name-input" value="${currentName}"></div><div class="input-group"><label>COVER IMAGE (URL)</label><input type="text" id="list-cover-input" value="${currentCover}"></div><div class="input-group"><label>DESCRIPTION</label><textarea id="list-desc-input" rows="3">${currentDesc}</textarea></div><button id="btn-save-list" class="action-btn primary">SAVE CHANGES</button></div></div>`;
+    backdrop.innerHTML = `<div class="eth-modal-panel create-list-mode" style="z-index:2200"><div class="nav-btn close-btn">${Icons.close}</div><div class="create-form-container"><h2>EDIT SHELF</h2><div class="input-group"><label>SHELF NAME</label><input type="text" id="list-name-input" value="${currentName}"></div><div class="input-group"><label>COVER IMAGE (URL)</label><input type="text" id="list-cover-input" value="${currentCover}"></div><div class="input-group"><label>DESCRIPTION</label><textarea id="list-desc-input" rows="3">${currentDesc}</textarea></div><button id="btn-save-list" class="action-btn primary">SAVE CHANGES</button></div></div>`;
     document.body.appendChild(backdrop);
     requestAnimationFrame(() => backdrop.classList.add('active'));
     backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); backdrop.classList.remove('active'); setTimeout(() => backdrop.remove(), 200); };
@@ -717,7 +717,7 @@ function openSeriesModal(stack) {
         backdrop.className = `eth-modal-backdrop ${extraClass}`;
         const isGrid = state.innerViewMode === 'grid';
         let contentHtml = '';
-        if (stack.movies.length === 0) { contentHtml = `<div class="eth-empty-state" style="padding: 50px;">This list is empty.<br>${isUserList ? `<button id="btn-add-movie-empty" class="action-btn" style="margin-top:20px; width:auto;">+ Add Movie</button>` : 'Add "lists: '+stack.title+'" property to your movies.'}</div>`; } 
+        if (stack.movies.length === 0) { contentHtml = `<div class="eth-empty-state" style="padding: 50px;">This shelf is empty.<br>${isUserList ? `<button id="btn-add-movie-empty" class="action-btn" style="margin-top:20px; width:auto;">+ Add Movie</button>` : 'Add "lists: '+stack.title+'" property to your movies.'}</div>`; } 
         else {
             if(isGrid) {
                 // FIXED: Better delete button for mini-cards
@@ -746,7 +746,7 @@ function openSeriesModal(stack) {
         const viewToggleBtn = `<button class="nav-btn view-toggle-btn" title="Toggle View" style="position:absolute; top:30px; right:40px; z-index:50;">${isGrid ? Icons.list : Icons.grid}</button>`;
         
         // REMOVED <span class="cl-h-count">...</span> from header to clean up UI
-        backdrop.innerHTML = `<div class="eth-modal-panel collection-mode"><div class="panel-bg" style="background-image: url('${stack.cover}')"></div><div class="panel-overlay"></div><button class="nav-btn close-btn floating" style="z-index:51;">${Icons.close}</button>${viewToggleBtn}<div class="collection-layout"><div class="cl-sidebar"><div class="cl-poster-wrapper"><div class="cl-poster-card"><div class="cl-poster" style="background-image: url('${stack.cover}')"></div><div class="cl-tag">${labelText}</div></div></div><div class="cl-meta-block"><h1 class="cl-title">${stack.title}</h1>${sidebarActions}<div class="cl-stats-grid"><div class="cl-stat-box"><div class="cl-stat-icon">${Icons.clock}</div><div class="cl-stat-val">${stack.totalRuntime}</div><div class="cl-stat-label">Pages</div></div><div class="cl-stat-box"><div class="cl-stat-icon">${Icons.star}</div><div class="cl-stat-val">${stack.avgScore}</div><div class="cl-stat-label">Score</div></div>${!isUserList ? `<div class="cl-stat-box"><div class="cl-stat-icon">${Icons.chart}</div><div class="cl-stat-val">${stack.avgLB}</div><div class="cl-stat-label">LB</div></div>` : ''}</div><div class="cl-progress-card"><div class="stat-row"><span>Progress</span><b>${stack.read} / ${stack.count}</b></div><div class="stat-bar"><div class="stat-fill" style="width:${stack.progress}%; background:${stack.color}"></div></div></div></div></div><div class="cl-content-wrapper"><div class="cl-header-sticky"><span class="cl-h-title">MOVIE LIST</span></div><div class="cl-scroll-area ${isGrid ? 'grid-layout' : 'list-layout'}">${contentHtml}</div></div></div></div>`;
+        backdrop.innerHTML = `<div class="eth-modal-panel collection-mode"><div class="panel-bg" style="background-image: url('${stack.cover}')"></div><div class="panel-overlay"></div><button class="nav-btn close-btn floating" style="z-index:51;">${Icons.close}</button>${viewToggleBtn}<div class="collection-layout"><div class="cl-sidebar"><div class="cl-poster-wrapper"><div class="cl-poster-card"><div class="cl-poster" style="background-image: url('${stack.cover}')"></div><div class="cl-tag">${labelText}</div></div></div><div class="cl-meta-block"><h1 class="cl-title">${stack.title}</h1>${sidebarActions}<div class="cl-stats-grid"><div class="cl-stat-box"><div class="cl-stat-icon">${Icons.clock}</div><div class="cl-stat-val">${stack.totalRuntime}</div><div class="cl-stat-label">Pages</div></div><div class="cl-stat-box"><div class="cl-stat-icon">${Icons.star}</div><div class="cl-stat-val">${stack.avgScore}</div><div class="cl-stat-label">Score</div></div>${!isUserList ? `<div class="cl-stat-box"><div class="cl-stat-icon">${Icons.chart}</div><div class="cl-stat-val">${stack.avgLB}</div><div class="cl-stat-label">LB</div></div>` : ''}</div><div class="cl-progress-card"><div class="stat-row"><span>Progress</span><b>${stack.read} / ${stack.count}</b></div><div class="stat-bar"><div class="stat-fill" style="width:${stack.progress}%; background:${stack.color}"></div></div></div></div></div><div class="cl-content-wrapper"><div class="cl-header-sticky"><span class="cl-h-title">SHLEVED BOOKS</span></div><div class="cl-scroll-area ${isGrid ? 'grid-layout' : 'list-layout'}">${contentHtml}</div></div></div></div>`;
         document.body.appendChild(backdrop);
         requestAnimationFrame(() => backdrop.classList.add('active'));
         backdrop.querySelector('.view-toggle-btn').onclick = (e) => { e.stopPropagation(); state.innerViewMode = state.innerViewMode === 'grid' ? 'list' : 'grid'; closeModal(); setTimeout(() => openSeriesModal(stack), 250); };
@@ -1043,7 +1043,7 @@ function renderApp() {
     displayItems.forEach(item => { 
         if (item.type === 'createListCard') {
             const card = contentArea.createEl("div", { cls: "eth-card create-list-card" });
-            card.innerHTML = `<div class="create-icon-wrap">${Icons.plus}</div><div class="create-text">Create New List</div>`;
+            card.innerHTML = `<div class="create-icon-wrap">${Icons.plus}</div><div class="create-text">Create New Shelf</div>`;
             card.onclick = () => openCreateListModal();
         } 
         else if (item.type === 'stack' || item.type === 'userList') { 
@@ -1053,7 +1053,7 @@ function renderApp() {
             card.style.setProperty('--accent', item.color);
 
             const badgeText = item.type === 'userList' ? 'LIST' : 'COLLECTION';
-            const deleteBtn = item.type === 'userList' ? `<div class="stack-delete-btn" title="Delete List">${Icons.trash}</div>` : '';
+            const deleteBtn = item.type === 'userList' ? `<div class="stack-delete-btn" title="Delete Shelf">${Icons.trash}</div>` : '';
             const subText = item.type === 'userList' ? (item.desc || '') : (item.desc || 'Series / Boxset');
 
             // SIMPLIFIED HTML: Removed stack-layer divs for cleaner classic look
