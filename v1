@@ -833,7 +833,7 @@ createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusWatched); createSe
 const navRight = navIsland.createEl("div", { cls: "nav-grp end tool-kit" });
 const btnRandom = navRight.createEl("button", { cls: "eth-hud-btn icon-only", title: "Shuffle / Random Movie" });
 btnRandom.innerHTML = Icons.dice;
-btnRandom.onclick = () => { const validMovies = rawPages.map(p => getMovieData(p)).filter(m => m.status !== CONFIG.statusWatched); if(validMovies.length > 0) { const rand = validMovies[Math.floor(Math.random() * validMovies.length)]; openMovieModal(rand); } else { new Notice("No movies to watch!"); } };
+btnRandom.onclick = () => { const validMovies = rawPages.map(p => getMovieData(p)).filter(m => m.status !== CONFIG.statusWatched); if(validMovies.length > 0) { const rand = validMovies[Math.floor(Math.random() * validMovies.length)]; openMovieModal(rand); } else { new Notice("No books to read!"); } };
 const statsBtn = navRight.createEl("button", { cls: "eth-hud-btn icon-only", title: "Analytics" });
 statsBtn.innerHTML = Icons.stats;
 statsBtn.onclick = () => openAnalyticsModal();
