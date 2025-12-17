@@ -606,7 +606,7 @@ function openMovieSelectorModal(targetName, onAddCallback, mode = 'list') {
     selectorBackdrop.style.zIndex = "2300"; 
     
     const allMovies = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists").map(p => getMovieData(p)).sort((a,b) => a.title.localeCompare(b.title));
-    selectorBackdrop.innerHTML = `<div class="eth-modal-panel selector-panel"><div class="selector-header"><h3>Add to "${targetName}"</h3><div class="selector-search">${Icons.search}<input type="text" id="movie-selector-search" placeholder="Search movies..."></div><div class="nav-btn close-btn-selector">${Icons.close}</div></div><div class="selector-grid" id="movie-selector-grid"></div></div>`;
+    selectorBackdrop.innerHTML = `<div class="eth-modal-panel selector-panel"><div class="selector-header"><h3>Add to "${targetName}"</h3><div class="selector-search">${Icons.search}<input type="text" id="movie-selector-search" placeholder="Search books..."></div><div class="nav-btn close-btn-selector">${Icons.close}</div></div><div class="selector-grid" id="movie-selector-grid"></div></div>`;
     document.body.appendChild(selectorBackdrop);
     requestAnimationFrame(() => selectorBackdrop.classList.add('active'));
     const grid = selectorBackdrop.querySelector('#movie-selector-grid');
@@ -725,7 +725,7 @@ function openSeriesModal(stack) {
         backdrop.className = `eth-modal-backdrop ${extraClass}`;
         const isGrid = state.innerViewMode === 'grid';
         let contentHtml = '';
-        if (stack.movies.length === 0) { contentHtml = `<div class="eth-empty-state" style="padding: 50px;">This shelf is empty.<br>${isUserList ? `<button id="btn-add-movie-empty" class="action-btn" style="margin-top:20px; width:auto;">+ Add Movie</button>` : 'Add "lists: '+stack.title+'" property to your movies.'}</div>`; } 
+        if (stack.movies.length === 0) { contentHtml = `<div class="eth-empty-state" style="padding: 50px;">This shelf is empty.<br>${isUserList ? `<button id="btn-add-movie-empty" class="action-btn" style="margin-top:20px; width:auto;">+ Add Book</button>` : 'Add "lists: '+stack.title+'" property to your books.'}</div>`; } 
         else {
             if(isGrid) {
                 // FIXED: Better delete button for mini-cards
@@ -819,7 +819,7 @@ const searchAndFilter = navCenter.createEl("div", { cls: "search-and-filter-grou
 
 // Search Input
 const searchInputEl = searchAndFilter.createEl("div", { cls: "modern-search-input" });
-searchInputEl.innerHTML = `<div class="search-icon">${Icons.search}</div><input type="text" placeholder="Search movies..." value="${state.search}">`;
+searchInputEl.innerHTML = `<div class="search-icon">${Icons.search}</div><input type="text" placeholder="Search books..." value="${state.search}">`;
 const realInput = searchInputEl.querySelector('input');
 realInput.oninput = (e) => { state.search = e.target.value; debouncedRender(); };
 
@@ -1047,7 +1047,7 @@ function renderApp() {
     if (state.viewMode === 'timeline') { contentArea.innerHTML = renderTimeline(pages); return; } 
     const displayItems = processItems(pages, state.sortMode, state.sortDir, state.viewMode, state.categoryMode); 
     if (state.filter === 'lists' && (!displayItems || displayItems.length === 0 || displayItems[0].type !== 'createListCard')) { displayItems.unshift({ type: 'createListCard' }); }
-    if (!displayItems || displayItems.length === 0) { contentArea.innerHTML = `<div class="eth-empty-state">No movies found.</div>`; return; } 
+    if (!displayItems || displayItems.length === 0) { contentArea.innerHTML = `<div class="eth-empty-state">No books found.</div>`; return; } 
     displayItems.forEach(item => { 
         if (item.type === 'createListCard') {
             const card = contentArea.createEl("div", { cls: "eth-card create-list-card" });
@@ -1075,7 +1075,7 @@ function renderApp() {
                     ${deleteBtn}
                     <div class="stack-glass-bar">
                         <div class="sgb-info">
-                            <span>${Icons.layers} ${item.count} Movies</span>
+                            <span>${Icons.layers} ${item.count} Books</span>
                             <span class="sgb-count">${item.read}/${item.count}</span>
                         </div>
                         <div class="sgb-track">
