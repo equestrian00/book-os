@@ -85,7 +85,6 @@ const SortCriteria = [
 // --- 5. HELPERS ---
 function debounce(func, wait) { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), wait); }; }
 function cleanText(raw) { if (!raw) return null; if (Array.isArray(raw)) return raw.map(cleanText).filter(x => x); if (typeof raw === 'object' && raw.path) return raw.display ? raw.display : raw.path.split('/').pop().replace('.md', ''); return String(raw).replace(/\[\[.*?\|(.*?)\]\]/g, '$1').replace(/\[\[(.*?)\]\]/g, '$1').trim(); }
-function parseRuntime(rt) { if (!rt) return 0; let s = String(rt).toLowerCase(); let m = 0; if (s.includes('h')) { let p = s.match(/(\d+)\s*h/); if(p) m += parseInt(p[1]) * 60; p = s.match(/(\d+)\s*m/); if(p) m += parseInt(p[1]); } else { m = parseInt(s.replace(/\D/g,'')) || 0; } return m; }
 function formatTotalRuntime(pages) { 
     return pages ? `${pages} pages` : "0 pages"; 
 }
@@ -104,7 +103,6 @@ function parseDateSafe(input) {
 }
 
 function formatDateDisplay(dateObj) { if (!dateObj) return ""; const d = new Date(dateObj); if (isNaN(d.getTime())) return ""; const day = String(d.getDate()).padStart(2, '0'); const month = String(d.getMonth() + 1).padStart(2, '0'); const year = d.getFullYear(); return `${day}-${month}-${year}`; }
-function formatDuration(raw) { if (!raw) return "No Data"; let s = String(raw).toLowerCase(); if (s.includes('h') || s.includes('m') || s.includes('min') || s.includes('dk')) return raw; return `${raw} min`; }
 
 // --- FILE OPERATIONS ---
 async function updateFileStatus(filePath, newStatus) {
