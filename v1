@@ -290,7 +290,7 @@ function calculateAnalytics(pages) {
     pages.forEach(p => {
         const m = getMovieData(p);
         const status = String(m.status || "").toLowerCase();
-        if (status.includes('watch') || status.includes('izlendi') || m.watchDates.length > 0) {
+        if (status.includes('read') || status.includes('izlendi') || m.watchDates.length > 0) {
             totalWatched++; totalMins += (m.runtimeMins || 0);
             if(m.score > 0) { totalScore += m.score; scoreCount++; }
             if(m.year) years[m.year] = (years[m.year] || 0) + 1;
@@ -690,7 +690,7 @@ function openMovieModal(m, parentStack = null) {
         backdrop.className = 'eth-modal-backdrop';
         const castHtml = m.cast.length > 0 ? `<div class="eth-chips-grid">${m.cast.slice(0, 12).map(c => `<div class="chip">● ${c}</div>`).join('')}</div>` : `<span class="muted-text">No cast info.</span>`;
         const badgeHtml = m.badges.map(b => `<span class="badge">${b}</span>`).join('');
-        const logHtml = m.watchDates.length > 0 ? `<div class="log-box"><div class="log-head">WATCH LOG</div>${m.watchDates.map(d => `<div class="log-row"><span>${Icons.check}</span> ${d}</div>`).join('')}</div>` : '';
+        const logHtml = m.watchDates.length > 0 ? `<div class="log-box"><div class="log-head">READING LOG</div>${m.watchDates.map(d => `<div class="log-row"><span>${Icons.check}</span> ${d}</div>`).join('')}</div>` : '';
         const prettyRuntime = formatDuration(m.pages);
         const dateAdded = m.created ? formatDateDisplay(m.created) : "Unknown";
         const backButton = parentStack ? `<button class="nav-btn back-btn" title="Go Back">${Icons.back} <span>Back</span></button>` : '';
@@ -1029,7 +1029,7 @@ sliderInput.oninput = (e) => { state.gridSize = e.target.value; contentArea.styl
 contentArea.style.setProperty('--grid-size', `${state.gridSize}px`);
 const debouncedRender = debounce(() => renderApp(), 300); 
 
-function renderTimeline(pages) { const timelineEvents = []; pages.forEach(p => { const m = getMovieData(p); if (m.watchDateObjs.length > 0) m.watchDateObjs.forEach(date => timelineEvents.push({ date: date, movie: m, isLog: true })); else if (m.status === CONFIG.statusWatched && m.created) timelineEvents.push({ date: m.created, movie: m, isLog: false }); }); timelineEvents.sort((a, b) => b.date - a.date); if (timelineEvents.length === 0) return `<div class="eth-empty-state">No timeline data available.</div>`; let html = `<div class="eth-timeline-stream">`; let currentGroup = ""; timelineEvents.forEach(ev => { const key = ev.date.toLocaleString('en-US', { month: 'long', year: 'numeric' }); if (key !== currentGroup) { if (currentGroup !== "") html += `</div></div>`; html += `<div class="stream-group"><div class="stream-header"><span class="sh-dot"></span> ${key}</div><div class="stream-grid">`; currentGroup = key; } const dayNumber = ev.date.getDate(); const dayName = ev.date.toLocaleDateString('en-US', { weekday: 'short' }); html += `<div class="stream-card" onclick="openMovieModalFromTimeline('${ev.movie.file.path}')"><div class="st-poster" style="background-image: url('${ev.movie.cover}')"><div class="st-date-badge"><b>${dayNumber}</b><span>${dayName}</span></div></div><div class="st-info"><div class="st-title">${ev.movie.title}</div><div class="st-meta">${ev.movie.year} • <span style="color:${ev.movie.color}">${ev.movie.mainGenre}</span></div><div class="st-rating">${ev.movie.score > 0 ? '★ ' + ev.movie.score : ''}</div></div></div>`; }); html += `</div></div></div>`; return html; }
+function renderTimeline(pages) { const timelineEvents = []; pages.forEach(p => { const m = getMovieData(p); if (m.watchDateObjs.length > 0) m.watchDateObjs.forEach(date => timelineEvents.push({ date: date, movie: m, isReadDate: true })); else if (m.status === CONFIG.statusWatched && m.created) timelineEvents.push({ date: m.created, movie: m, isReadDate: false }); }); timelineEvents.sort((a, b) => b.date - a.date); if (timelineEvents.length === 0) return `<div class="eth-empty-state">No timeline data available.</div>`; let html = `<div class="eth-timeline-stream">`; let currentGroup = ""; timelineEvents.forEach(ev => { const key = ev.date.toLocaleString('en-US', { month: 'long', year: 'numeric' }); if (key !== currentGroup) { if (currentGroup !== "") html += `</div></div>`; html += `<div class="stream-group"><div class="stream-header"><span class="sh-dot"></span> ${key}</div><div class="stream-grid">`; currentGroup = key; } const dayNumber = ev.date.getDate(); const dayName = ev.date.toLocaleDateString('en-US', { weekday: 'short' }); html += `<div class="stream-card" onclick="openMovieModalFromTimeline('${ev.movie.file.path}')"><div class="st-poster" style="background-image: url('${ev.movie.cover}')"><div class="st-date-badge"><b>${dayNumber}</b><span>${dayName}</span></div></div><div class="st-info"><div class="st-title">${ev.movie.title}</div><div class="st-meta">${ev.movie.year} • <span style="color:${ev.movie.color}">${ev.movie.mainGenre}</span></div><div class="st-rating">${ev.movie.score > 0 ? '★ ' + ev.movie.score : ''}</div></div></div>`; }); html += `</div></div></div>`; return html; }
 window.openMovieModalFromTimeline = (path) => { const page = app.metadataCache.getFirstLinkpathDest(path, ""); const m = getMovieData({file: page, ...dv.page(path)}); openMovieModal(m); };
 
 function renderApp() { 
