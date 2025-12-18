@@ -907,7 +907,7 @@ const createSegBtn = (txt, id) => {
     }; 
     return btn; 
 };
-createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusRead); createSegBtn("Shelves", 'lists');
+createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusRead); createSegBtn("Unread", 'list'); createSegBtn("Shelves", 'lists');
 
 // RIGHT: TOOLS
 const navRight = navIsland.createEl("div", { cls: "nav-grp end tool-kit" });
