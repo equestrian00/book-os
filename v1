@@ -1069,7 +1069,7 @@ availableGenres.forEach(g => createCatChip(rowGenres, g, g));
 vmGroup3.createEl("div", { cls: "menu-label", text: "AUTHORS" });
 const rowAuthors = vmGroup3.createEl("div", { cls: "chip-cloud" });
 availableAuthors.forEach(a => createCatChip(rowAuthors, a, a));
-vmGroup3.createEl("div", { cls: "menu-label", text: "TROPES (MULTI-SELECT)" });
+vmGroup3.createEl("div", { cls: "menu-label", text: "TROPES" });
 const rowTropes = vmGroup3.createEl("div", { cls: "chip-cloud" });
 
 availableTropes.forEach(t => {
