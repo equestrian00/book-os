@@ -334,6 +334,13 @@ function getMovieData(page) {
 
     const lbScore = p.scoreLB || 0;
     const spicerating = p.spicerating || 0;
+const rawLang = p.languagerating ? String(p.languagerating) : "";
+    let langDisplay = "";
+    if (rawLang.length === 4) {
+        langDisplay = rawLang;
+    } else {
+        langDisplay = rawLang.substring(0, 3);
+    }
     const displayScore = Number(myScore) > 0 ? myScore : lbScore;    let created = p.created ? parseDateSafe(p.created) : new Date(p.file.ctime.ts); if (!created || isNaN(created.getTime())) created = new Date(p.file.ctime.ts);
     let released = p.release_date || p.released; if (released) released = parseDateSafe(released); if (!released) released = new Date(year, 0, 1); 
     let genreList = p.genre ? (Array.isArray(p.genre) ? p.genre : String(p.genre).split(',')) : (p.tags || []);
@@ -367,6 +374,7 @@ function getMovieData(page) {
         mainGenre, displayGenres, allGenres: genreList, author, tropes, description: p.description || "No description available.", 
         status: p.status, series: cleanText(p.series) || null, created: created, color, badges: getBadges(p), 
         spicerating: Number(spicerating),
+        languageDisplay: langDisplay,
         readDates: formattedReadDates, readDateObjs: readDates, userLists: userLists 
     };
 }
@@ -1098,7 +1106,7 @@ function renderApp() {
             card.style.setProperty('--accent', m.color); 
             
             const badgeHtml = m.badges.length > 0 ? `<div class="card-badges">${m.badges.slice(0,2).map(b=>`<span>${b}</span>`).join('')}</div>` : ''; 
-            card.innerHTML = `<div class=\"eth-card-cover\" style=\"background-image: url('${m.cover}')\"><div class=\"eth-card-overlay\"><div class=\"eth-play-circle\" style=\"color:${m.color}\">${Icons.play}</div></div>${m.score > 0 ? `<div class=\"eth-rating-badge\">${Icons.star} ${m.score} ${m.spicerating > 0 ? `<span style="margin-left:6px; opacity:0.8; color: red;">🌶 ${m.spicerating}</span>` : ''}</div>` : ''}${badgeHtml}</div><div class=\"eth-card-meta\"><div class=\"title\" title=\"${m.title}\">${m.title}</div><div class=\"sub\">${m.year} • <span style=\"opacity:0.7; color:${m.color}\">${m.displayGenres}</span></div></div>`; 
+            card.innerHTML = `<div class=\"eth-card-cover\" style=\"background-image: url('${m.cover}')\"><div class=\"eth-card-overlay\"><div class=\"eth-play-circle\" style=\"color:${m.color}\">${Icons.play}</div></div>${m.score > 0 ? `<div class=\"eth-rating-badge\">${Icons.star} ${m.score} ${m.spicerating > 0 ? `<span style="margin-left:6px; opacity:0.8; color: red;">🌶 ${m.spicerating}</span>` : ''}${m.languageDisplay ? `<span class="lan-val" style="margin-left:6px;">${Icons.alert} ${m.languageDisplay}</span>` : ''}</div>` : ''}${badgeHtml}</div><div class=\"eth-card-meta\"><div class=\"title\" title=\"${m.title}\">${m.title}</div><div class=\"sub\">${m.year} • <span style=\"opacity:0.7; color:${m.color}\">${m.displayGenres}</span></div></div>`; 
             card.onclick = () => openMovieModal(m); card.onmouseenter = () => { ambientBg.style.backgroundImage = `url('${m.cover}')`; ambientBg.classList.add('active'); }; card.onmouseleave = () => { ambientBg.classList.remove('active'); }; 
         } 
     }); 
