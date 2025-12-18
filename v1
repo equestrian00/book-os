@@ -98,7 +98,7 @@ function formatDuration(pages) {
     return `${pages}`; 
 }
 
-function getBadges(p) { const tags = (Array.isArray(p.badges) ? p.badges.join(' ') : (p.badges||'')) + ' ' + (p.type||'') + ' ' + (p.owned||''); const lower = tags.toLowerCase(); const badges = []; if (lower.includes('favorite')) badges.push('♥'); if (lower.includes('fiction')) badges.push('☾'); if (lower.includes('nonfiction')) badges.push('🖋'); if (lower.includes('reread')) badges.push('⟳'); if (lower.includes('true')) badges.push('🎖'); return badges; }
+function getBadges(p) { const tags = (Array.isArray(p.badges) ? p.badges.join(' ') : (p.badges||''))); const lower = tags.toLowerCase(); const badges = []; if (lower.includes('favorite')) badges.push('♥'); if (lower.includes('reread')) badges.push('⟳'); return badges; }
 
 function parseDateSafe(input) { 
     if (!input) return null; 
