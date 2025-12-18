@@ -467,8 +467,18 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
     if (state.filter === 'lists') { return [{ type: 'createListCard' }, ...processUserLists(pages)]; }
     if (viewMode === 'timeline') return null;
     let processedPages = pages;
-    if (state.filter === CONFIG.statusRead) processedPages = pages.where(p => p.status === CONFIG.statusRead);
-    else if (state.filter === 'list') processedPages = pages.where(p => !p.status || CONFIG.statusList.includes(p.status)); 
+    if (state.filter === CONFIG.statusRead) {
+        processedPages = pages.where(p => p.status === CONFIG.statusRead);
+    } else if (state.filter === CONGIG.statusList) {
+        // Strict filter: Check if the status explicitly matches one of your 'unread' statuses
+        // (Uses lowercase check to handle "Unread" vs "unread" automatically)
+        processedPages = pages.where(p => {
+            if (!p.status) return false; // Hide books with NO status
+            const s = String(p.status).toLowerCase();
+            const targets = Array.isArray(CONFIG.statusList) ? CONFIG.statusList.map(t => t.toLowerCase()) : [CONFIG.statusList.toLowerCase()];
+            return targets.includes(s);
+        });
+    }
     
     // FILTERS: GENRES + TECH + SCORE (DUAL) + YEAR (DUAL)
     processedPages = processedPages.where(p => {
