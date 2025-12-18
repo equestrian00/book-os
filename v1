@@ -791,7 +791,6 @@ function openSeriesModal(stack) {
         if (btnAddEmpty) btnAddEmpty.onclick = triggerAdd; 
         if (btnEditList) btnEditList.onclick = () => { openEditListModal(stack.id, stack.title, stack.cover, stack.desc); };
         if (btnEditSeries) btnEditSeries.onclick = () => { openEditSeriesModal(stack.title, stack.movies[0].seriesCover); }; 
-};
         
         backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); closeModal(); };
         backdrop.onclick = (e) => { if(e.target === backdrop) closeModal(); };
