@@ -790,10 +790,7 @@ function openSeriesModal(stack) {
         if (btnAddSidebar) btnAddSidebar.onclick = triggerAdd; 
         if (btnAddEmpty) btnAddEmpty.onclick = triggerAdd; 
         if (btnEditList) btnEditList.onclick = () => { openEditListModal(stack.id, stack.title, stack.cover, stack.desc); };
-        if (btnEditSeries) btnEditSeries.onclick = () => { 
-    // Fix: Search all movies in the stack for the active series cover, not just the first one
-    const currentCover = stack.movies.find(m => m.seriesCover)?.seriesCover || "";
-    openEditSeriesModal(stack.title, currentCover); 
+        if (btnEditSeries) btnEditSeries.onclick = () => { openEditSeriesModal(stack.title, stack.movies[0].seriesCover); }; 
 };
         
         backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); closeModal(); };
