@@ -387,9 +387,15 @@ function extractAllGenres(pages) {
     const genreSet = new Set();
     pages.forEach(p => {
         let genreList = p.genre ? (Array.isArray(p.genre) ? p.genre : String(p.genre).split(',')) : (p.tags || []);
-        genreList.map(cleanText).filter(g => g && !['movie','film','read','izlendi'].includes(g.toLowerCase())).forEach(g => genreSet.add(g));
+        genreList.map(cleanText)
+            .filter(g => g && !['movie','film','read','izlendi'].includes(g.toLowerCase()))
+            .forEach(g => genreSet.add(g.toLowerCase())); // 1. Lowercase for strict deduplication
     });
-    return Array.from(genreSet).sort();
+
+    // 2. Convert back to Title Case and sort
+    return Array.from(genreSet).map(g => {
+        return g.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }).sort();
 }
 
 function extractAllBadges(pages) {
@@ -1002,7 +1008,6 @@ const createCatChip = (container, txt, id, isSpecial = false) => {
 createCatChip(rowSpecial, "All", "all", true);
 createCatChip(rowSpecial, "Series", "series", true);
 availableBadges.forEach(b => createCatChip(rowSpecial, b, b));
-vmGroup3.createEl("div", { cls: "menu-separator" });
 const rowGenres = vmGroup3.createEl("div", { cls: "chip-cloud" });
 availableGenres.forEach(g => createCatChip(rowGenres, g, g));
 
