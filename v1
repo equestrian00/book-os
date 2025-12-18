@@ -27,7 +27,7 @@ const GenreColors = {
 const initialState = {
     filter: 'all', search: '', sortMode: 'title', sortDir: 'asc',
     categoryMode: 'all', viewMode: 'grid', gridSize: 220,
-    rangeLB: [0, 5], rangeMy: [0, 5], rangeYear: [1920, 2030],
+    rangeMy: [0, 5], rangeYear: [1920, 2030], rangeSpice: [0, 5],
     showMenu: false, innerViewMode: 'list'
 };
 
@@ -466,11 +466,11 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
         
         // 2. Dual Range Filters
         // Range: [min, max]
-        const matchLB = m.scoreLB >= state.rangeLB[0] && m.scoreLB <= state.rangeLB[1];
         const matchMy = m.score >= state.rangeMy[0] && m.score <= state.rangeMy[1];
         const matchYear = m.year >= state.rangeYear[0] && m.year <= state.rangeYear[1];
+        const matchSpice = m.spicerating >= state.rangeSpice[0] && m.spicerating <= state.rangeSpice[1];
 
-        return matchCat && matchLB && matchMy && matchYear;
+        return matchCat && matchSpice && matchMy && matchYear;
     });
 
     let movies = processedPages.map(p => getMovieData(p));
@@ -993,6 +993,7 @@ const createDualSlider = (parent, title, min, max, step, stateKey) => {
 };
 
 createDualSlider(rowRanges, "Personal Score", 0, 5, 0.1, "rangeMy");
+createDualSlider(rowRanges, "Spice Rating", 0, 5, 1, "rangeSpice");
 createDualSlider(rowRanges, "Publication Year", 1920, 2030, 1, "rangeYear");
 
 
