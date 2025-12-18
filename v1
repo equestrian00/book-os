@@ -522,7 +522,7 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
             matchTropes = state.selectedTropes.every(sel => bookTropes.includes(sel.toLowerCase()));
         }
 
-        return matchCat && matchLB && matchMy && matchYear && matchSpice && matchTropes;
+        return matchCat && matchMy && matchYear && matchSpice && matchTropes;
     });
 
     let movies = processedPages.map(p => getMovieData(p));
@@ -1109,10 +1109,10 @@ function updateMenuVisuals() {
 
     viewMenu.querySelectorAll('.sort-btn').forEach(b => {
         if(b.dataset.id === state.sortMode) b.classList.add('active'); else b.classList.remove('active');
+    });
     viewMenu.querySelectorAll('.trope-btn').forEach(b => {
         if (state.selectedTropes.includes(b.innerText)) b.classList.add('active');
         else b.classList.remove('active');
-    }); // ID10T SEARCH
     });
     
     const dirB = viewMenu.querySelector('.sort-dir-btn');
