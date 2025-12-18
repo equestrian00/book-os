@@ -28,7 +28,7 @@ const GenreColors = {
 const initialState = {
     filter: 'all', search: '', sortMode: 'title', sortDir: 'asc',
     categoryMode: 'all', viewMode: 'grid', gridSize: 220,
-    rangeMy: [0, 5], rangeYear: [1920, 2030], rangeSpice: [0, 5],
+    rangeMy: [0, 5], rangeYear: [1920, 2030], rangeSpice: [0, 5], selectedTropes: [],
     showMenu: false, innerViewMode: 'list'
 };
 
@@ -384,6 +384,17 @@ const rawLang = p.languagerating ? String(p.languagerating) : "";
     };
 }
 
+function extractAllTropes(pages) {
+    const tropeSet = new Set();
+    pages.forEach(p => {
+        let tList = p.tropes ? (Array.isArray(p.tropes) ? p.tropes : String(p.tropes).split(',')) : [];
+        tList.map(cleanText).filter(t => t).forEach(t => tropeSet.add(t.toLowerCase()));
+    });
+    return Array.from(tropeSet).map(t => {
+        return t.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }).sort();
+}
+
 function extractAllGenres(pages) {
     const genreSet = new Set();
     pages.forEach(p => {
@@ -504,8 +515,14 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
         const matchMy = m.score >= state.rangeMy[0] && m.score <= state.rangeMy[1];
         const matchYear = m.year >= state.rangeYear[0] && m.year <= state.rangeYear[1];
         const matchSpice = m.spicerating >= state.rangeSpice[0] && m.spicerating <= state.rangeSpice[1];
+        let matchTropes = true;
+        if (state.selectedTropes.length > 0) {
+            const bookTropes = m.tropes.map(t => t.toLowerCase());
+            // Check if book contains ALL selected tropes
+            matchTropes = state.selectedTropes.every(sel => bookTropes.includes(sel.toLowerCase()));
+        }
 
-        return matchCat && matchSpice && matchMy && matchYear;
+        return matchCat && matchLB && matchMy && matchYear && matchSpice && matchTropes;
     });
 
     let movies = processedPages.map(p => getMovieData(p));
@@ -875,6 +892,7 @@ const ambientBg = root.createEl("div", { cls: "eth-ambient-bg" });
 let rawPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists"); 
 const availableGenres = extractAllGenres(rawPages); 
 const availableAuthors = extractAllAuthors(rawPages);
+const availableTropes = extractAllTropes(rawPages);
 const availableBadges = extractAllBadges(rawPages);
 
 const headerWrapper = root.createEl("div", { cls: "eth-header-wrapper" });
@@ -931,6 +949,7 @@ menuHeader.innerHTML = `<span class="menu-header-title">CONTROL PANEL</span><div
 menuHeader.querySelector('.menu-close-btn').onclick = () => { state.showMenu = false; updateMenuVisuals(); };
 menuHeader.querySelector('.reset-btn').onclick = () => {
     state = JSON.parse(JSON.stringify(initialState));
+    state.selectedTropes = [];
     state.showMenu = true; 
     realInput.value = ""; 
     segmentedWrap.querySelectorAll('.eth-seg-btn').forEach(b => b.classList.remove('active'));
@@ -1050,6 +1069,28 @@ availableGenres.forEach(g => createCatChip(rowGenres, g, g));
 vmGroup3.createEl("div", { cls: "menu-label", text: "AUTHORS" });
 const rowAuthors = vmGroup3.createEl("div", { cls: "chip-cloud" });
 availableAuthors.forEach(a => createCatChip(rowAuthors, a, a));
+vmGroup3.createEl("div", { cls: "menu-label", text: "TROPES (MULTI-SELECT)" });
+const rowTropes = vmGroup3.createEl("div", { cls: "chip-cloud" });
+
+availableTropes.forEach(t => {
+    // Create special multi-select chip
+    const btn = rowTropes.createEl("button", { 
+        cls: `menu-chip small trope-btn ${state.selectedTropes.includes(t) ? 'active' : ''}`, 
+        text: t 
+    });
+    
+    btn.onclick = () => {
+        if (state.selectedTropes.includes(t)) {
+            // Remove if already selected
+            state.selectedTropes = state.selectedTropes.filter(x => x !== t);
+        } else {
+            // Add if not selected
+            state.selectedTropes.push(t);
+        }
+        updateMenuVisuals();
+        renderApp();
+    };
+});
 
 // --- HELPER: UPDATE MENU VISUALS WITHOUT RE-RENDERING ---
 function updateMenuVisuals() {
@@ -1068,6 +1109,10 @@ function updateMenuVisuals() {
 
     viewMenu.querySelectorAll('.sort-btn').forEach(b => {
         if(b.dataset.id === state.sortMode) b.classList.add('active'); else b.classList.remove('active');
+    viewMenu.querySelectorAll('.trope-btn').forEach(b => {
+        if (state.selectedTropes.includes(b.innerText)) b.classList.add('active');
+        else b.classList.remove('active');
+    }); // ID10T SEARCH
     });
     
     const dirB = viewMenu.querySelector('.sort-dir-btn');
