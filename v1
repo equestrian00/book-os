@@ -1039,7 +1039,6 @@ createCatChip(rowSpecial, "Series", "series", true);
 availableBadges.forEach(b => createCatChip(rowSpecial, b, b));
 const rowGenres = vmGroup3.createEl("div", { cls: "chip-cloud" });
 availableGenres.forEach(g => createCatChip(rowGenres, g, g));
-vmGroup3.createEl("div", { cls: "menu-separator" });
 vmGroup3.createEl("div", { cls: "menu-label", text: "AUTHORS" });
 const rowAuthors = vmGroup3.createEl("div", { cls: "chip-cloud" });
 availableAuthors.forEach(a => createCatChip(rowAuthors, a, a));
