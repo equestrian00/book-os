@@ -290,37 +290,80 @@ function getSystemLists() {
 }
 
 function calculateAnalytics(pages) {
-    let totalRead = 0; let totalMins = 0; let totalScore = 0; let scoreCount = 0; let totalSpice = 0; let spiceCount = 0;
-    const genres = {}; const authors = {}; const actors = {}; const years = {};
+    let totalRead = 0;
+    let totalMins = 0; let totalScore = 0; let scoreCount = 0; 
+    let totalSpice = 0; let spiceCount = 0;
+    
+    // NEW TRACKING VARIABLES
+    const genres = {}; 
+    const authors = {}; 
+    const actors = {}; // Tropes
+    const years = {};
+    const typeCounts = { fiction: 0, nonfiction: 0 };
+    const lenCounts = { short: 0, novella: 0, medium: 0, long: 0, epic: 0 };
+
     pages.forEach(p => {
         const m = getMovieData(p);
+        
+        // 1. Length Buckets (All books, read or unread)
+        const pg = m.runtimeMins || 0;
+        if (pg > 0) {
+            if (pg <= 60) lenCounts.short++;
+            else if (pg <= 150) lenCounts.novella++;
+            else if (pg <= 300) lenCounts.medium++;
+            else if (pg <= 500) lenCounts.long++;
+            else lenCounts.epic++;
+        }
+
+        // 2. Type Tracking (Fiction vs Nonfiction)
+        const t = String(p.type || "").toLowerCase();
+        if (t.includes('non')) typeCounts.nonfiction++;
+        else typeCounts.fiction++;
+
+        // 3. General Stats (Read books only)
         const status = String(m.status || "").toLowerCase();
+        // Check for read status
         if (status.includes('read') || status.includes('izlendi') || m.readDates.length > 0) {
-            totalRead++; totalMins += (m.runtimeMins || 0);
+            totalRead++; 
+            totalMins += pg;
             if(m.score > 0) { totalScore += m.score; scoreCount++; }
             if(m.spicerating > 0) { totalSpice += m.spicerating; spiceCount++; }
             if(m.year) years[m.year] = (years[m.year] || 0) + 1;
+            
+            // Genres & Tropes
             m.allGenres.forEach(g => { genres[g] = (genres[g] || 0) + 1; });
-            if(m.author && m.author !== "Unknown") { let dirs = Array.isArray(m.author) ? m.author : String(m.author).split(',').map(s => s.trim()); dirs.forEach(d => { if(d) authors[d] = (authors[d] || 0) + 1; }); }
             if(m.tropes && m.tropes.length > 0) { m.tropes.forEach(a => { actors[a] = (actors[a] || 0) + 1; }); }
         }
+        
+        // 4. Author Counts (All books)
+        if(m.author && m.author !== "Unknown") { 
+            let dirs = Array.isArray(m.author) ? m.author : String(m.author).split(',').map(s => s.trim()); 
+            dirs.forEach(d => { if(d) authors[d] = (authors[d] || 0) + 1; }); 
+        }
     });
+
     const getTop = (obj, limit) => Object.entries(obj).sort((a,b) => b[1] - a[1]).slice(0, limit);
     const avgScore = scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : "0.0";
-    
-    // Calculate Top Year
     const topYearEntry = Object.entries(years).sort((a,b) => b[1] - a[1])[0];
     const topYear = topYearEntry ? topYearEntry[0] : "-";
 
-    // SCALED: Get Top 8 items now instead of 5 for better filling
+    const totalBooks = pages.length;
+    
     return { 
-        totalRead, totalDuration: formatLongDuration(totalMins), avgScore, topYear, 
+        totalRead, 
+        tbrCount: totalBooks - totalRead, // TBR Calculation
+        totalDuration: formatLongDuration(totalMins), 
+        avgScore, 
+        topYear, 
         topGenres: getTop(genres, 8), 
+        totalGenresCount: Object.keys(genres).length, // Unique Genres
         topAuthors: getTop(authors, 8), 
-        topActors: getTop(actors, 8) 
+        totalAuthorsCount: Object.keys(authors).length, // Unique Authors
+        topActors: getTop(actors, 8),
+        lenCounts, // Length Distribution
+        typeCounts // Fiction/Nonfiction
     };
 }
-
 function getMovieData(page) {
     const p = page;
     const rawYear = p.year || p.Year || p.yil || p.release_date;
@@ -603,18 +646,44 @@ function openAnalyticsModal() {
         const data = calculateAnalytics(allPages);
         const maxGenreCount = data.topGenres.length > 0 ? data.topGenres[0][1] : 1;
         
-        // NEW STRUCTURE: HERO CARDS + 3 COLUMN LISTS
+        // --- PIE CHART CALCULATION ---
+        const lc = data.lenCounts;
+        const totalLen = lc.short + lc.novella + lc.medium + lc.long + lc.epic || 1;
+        // Colors for pie slices
+        const pieColors = { short: '#22c55e', novella: '#06b6d4', medium: '#6366f1', long: '#a855f7', epic: '#ef4444' };
+        
+        let deg = 0;
+        const slices = [];
+        // Helper to build gradient string
+        const addSlice = (key, val) => {
+            const pct = (val / totalLen) * 360;
+            if (val > 0) {
+                slices.push(`${pieColors[key]} ${deg}deg ${deg + pct}deg`);
+                deg += pct;
+            }
+        };
+        addSlice('short', lc.short); addSlice('novella', lc.novella); addSlice('medium', lc.medium);
+        addSlice('long', lc.long); addSlice('epic', lc.epic);
+        const pieGradient = slices.join(', ');
+
+        // --- TYPE BAR CALCULATION ---
+        const totalType = data.typeCounts.fiction + data.typeCounts.nonfiction || 1;
+        const fictPct = Math.round((data.typeCounts.fiction / totalType) * 100);
+
         backdrop.innerHTML = `
         <div class="eth-modal-panel stats-mode wide-screen">
             <div class="nav-btn close-btn">${Icons.close}</div>
             <div class="stats-header"><h2>BOOK ANALYTICS</h2></div>
             
             <div class="stats-content">
-                <!-- HERO CARDS -->
-                <div class="stats-hero-grid">
+                <div class="stats-hero-grid five-col">
                     <div class="stat-hero-card">
                         <div class="shc-val">${data.totalRead}</div>
-                        <div class="shc-label">BOOKS</div>
+                        <div class="shc-label">READ</div>
+                    </div>
+                    <div class="stat-hero-card">
+                        <div class="shc-val" style="color:var(--gold);">${data.tbrCount}</div>
+                        <div class="shc-label">TBR</div>
                     </div>
                     <div class="stat-hero-card">
                         <div class="shc-val">${data.totalDuration}</div>
@@ -626,16 +695,43 @@ function openAnalyticsModal() {
                     </div>
                     <div class="stat-hero-card">
                         <div class="shc-val" style="color:var(--accent);">${data.topYear}</div>
-                        <div class="shc-label">FAVORITE YEAR</div>
+                        <div class="shc-label">BEST YEAR</div>
                     </div>
                 </div>
 
-                <!-- DASHBOARD LISTS -->
+                <div class="stats-distribution-grid">
+                    <div class="stat-panel row-span">
+                        <h3>BOOK LENGTHS</h3>
+                        <div class="pie-container">
+                            <div class="pie-chart" style="background: conic-gradient(${pieGradient})"></div>
+                            <div class="pie-legend">
+                                <div class="pl-item"><span class="dot" style="background:${pieColors.short}"></span> Short <span class="muted">(0-60)</span> <b>${lc.short}</b></div>
+                                <div class="pl-item"><span class="dot" style="background:${pieColors.novella}"></span> Novella <span class="muted">(61-150)</span> <b>${lc.novella}</b></div>
+                                <div class="pl-item"><span class="dot" style="background:${pieColors.medium}"></span> Medium <span class="muted">(151-300)</span> <b>${lc.medium}</b></div>
+                                <div class="pl-item"><span class="dot" style="background:${pieColors.long}"></span> Long <span class="muted">(301-500)</span> <b>${lc.long}</b></div>
+                                <div class="pl-item"><span class="dot" style="background:${pieColors.epic}"></span> Epic <span class="muted">(501+)</span> <b>${lc.epic}</b></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-panel row-span">
+                        <h3>FICTION vs NONFICTION</h3>
+                        <div class="type-bar-container">
+                            <div class="type-bar">
+                                <div class="tb-fill fiction" style="width:${fictPct}%"></div>
+                            </div>
+                            <div class="type-legend">
+                                <div>FICTION <b>${data.typeCounts.fiction}</b></div>
+                                <div>NONFICTION <b>${data.typeCounts.nonfiction}</b></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="stats-dashboard-grid">
                     
-                    <!-- COL 1: TOP GENRES (BARS) -->
                     <div class="stat-panel">
-                        <h3>TOP GENRES</h3>
+                        <h3>TOP GENRES <span class="header-count">(of ${data.totalGenresCount})</span></h3>
                         <div class="simple-list">
                             ${data.topGenres.map(g => {
                                 const pct = Math.round((g[1] / maxGenreCount) * 100);
@@ -649,9 +745,8 @@ function openAnalyticsModal() {
                         </div>
                     </div>
 
-                    <!-- COL 2: TOP AUTHORS (RANK LIST) -->
                     <div class="stat-panel">
-                        <h3>TOP AUTHORS</h3>
+                        <h3>TOP AUTHORS <span class="header-count">(of ${data.totalAuthorsCount})</span></h3>
                         <div class="simple-list">
                             ${data.topAuthors.map((d,i) => `
                             <div class="sl-row">
@@ -662,7 +757,6 @@ function openAnalyticsModal() {
                         </div>
                     </div>
 
-                    <!-- COL 3: TOP ACTORS (RANK LIST) -->
                     <div class="stat-panel">
                         <h3>TOP TROPES</h3>
                         <div class="simple-list">
@@ -678,7 +772,6 @@ function openAnalyticsModal() {
                 </div>
             </div>
         </div>`;
-        
         document.body.appendChild(backdrop);
         requestAnimationFrame(() => backdrop.classList.add('active'));
         backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); closeModal(); };
