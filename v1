@@ -398,6 +398,23 @@ function extractAllGenres(pages) {
     }).sort();
 }
 
+function extractAllAuthors(pages) {
+    const authorSet = new Set();
+    pages.forEach(p => {
+        // Handle author field (supports single string or list)
+        let authorList = p.author ? (Array.isArray(p.author) ? p.author : String(p.author).split(',')) : [];
+        
+        authorList.map(cleanText)
+            .filter(a => a && a !== "Unknown")
+            .forEach(a => authorSet.add(a.toLowerCase())); // Deduplicate via lowercase
+    });
+
+    // Convert back to Title Case and Sort
+    return Array.from(authorSet).map(a => {
+        return a.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }).sort();
+}
+
 function extractAllBadges(pages) {
     const badgeSet = new Set();
     pages.forEach(p => {
@@ -460,8 +477,18 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
         // 1. Category/Genre/Tech Filter
         let matchCat = true;
         if (categoryMode !== 'all' && categoryMode !== 'series') {
-            let checkList = [...m.allGenres, ...m.badges];
-            matchCat = checkList.includes(categoryMode);
+            // Combine Genres and Badges
+            let rawCheckList = [...m.allGenres, ...m.badges];
+            
+            // Add Author(s) to the list
+            if (Array.isArray(m.author)) rawCheckList.push(...m.author);
+            else rawCheckList.push(m.author);
+
+            // Normalize everything to lowercase for case-insensitive matching
+            const checkList = rawCheckList.map(x => String(x).toLowerCase());
+            
+            // Check if the selected filter (normalized) exists in the book's data
+            matchCat = checkList.includes(categoryMode.toLowerCase());
         }
         
         // 2. Dual Range Filters
@@ -839,6 +866,7 @@ root.innerHTML = ""; root.className = "eth-ui-wrapper";
 const ambientBg = root.createEl("div", { cls: "eth-ambient-bg" });
 let rawPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists"); 
 const availableGenres = extractAllGenres(rawPages); 
+const availableAuthors = extractAllAuthors(rawPages);
 const availableBadges = extractAllBadges(rawPages);
 
 const headerWrapper = root.createEl("div", { cls: "eth-header-wrapper" });
@@ -1011,6 +1039,10 @@ createCatChip(rowSpecial, "Series", "series", true);
 availableBadges.forEach(b => createCatChip(rowSpecial, b, b));
 const rowGenres = vmGroup3.createEl("div", { cls: "chip-cloud" });
 availableGenres.forEach(g => createCatChip(rowGenres, g, g));
+vmGroup3.createEl("div", { cls: "menu-separator" });
+vmGroup3.createEl("div", { cls: "menu-label", text: "AUTHORS" });
+const rowAuthors = vmGroup3.createEl("div", { cls: "chip-cloud" });
+availableAuthors.forEach(a => createCatChip(rowAuthors, a, a));
 
 // --- HELPER: UPDATE MENU VISUALS WITHOUT RE-RENDERING ---
 function updateMenuVisuals() {
