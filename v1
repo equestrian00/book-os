@@ -451,13 +451,13 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
             const stackCover = specificCover ? specificCover.seriesCover : list[0].cover;
             const rep = list[list.length-1];
             const wC = list.filter(m => m.status === CONFIG.statusRead).length;
-            let totalMins = 0; let totalScore = 0; let scoreCount = 0; let totalLB = 0; let lbCount = 0;
-            list.forEach(m => { totalMins += m.runtimeMins || 0; if(m.score > 0) { totalScore += m.score; scoreCount++; } if(m.scoreLB > 0) { totalLB += m.scoreLB; lbCount++; } });
+            let totalMins = 0; let totalScore = 0; let scoreCount = 0; let totalSpice = 0; let spiceCount = 0;
+            list.forEach(m => { totalMins += m.runtimeMins || 0; if(m.score > 0) { totalScore += m.score; scoreCount++; } if(m.spicerating > 0) { totalSpice += m.spicerating; spiceCount++; } });
             stacks.push({ 
                 type: 'stack', title: name, count: list.length, 
                 read: wC, progress: Math.round((wC/list.length)*100), 
                 movies: list, cover: stackCover, sortKey: rep, color: rep.color,
-                totalRuntime: formatTotalRuntime(totalMins), avgScore: scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : "-", avgLB: lbCount > 0 ? (totalLB / lbCount).toFixed(1) : "-"
+                totalRuntime: formatTotalRuntime(totalMins), avgScore: scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : "-", avgLB: spiceCount > 0 ? (totalSpice / spiceCount).toFixed(1) : "-"
             });
         } else { singles.push({ type: 'movie', data: list[0] }); }
     }
