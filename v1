@@ -10,7 +10,8 @@ const NO_POSTER_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 const CONFIG = {  
     folder: '"Books"', // Movie data file path
     statusRead: "read",  
-    statusList: ["unread", "TBR"], 
+    statusList: "unread",  
+    statusListAlt: "TBR",
     imagePlaceholder: NO_POSTER_SVG,  
     listsDbPath: "" // Enter any file path
 };
@@ -467,16 +468,13 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
     if (state.filter === 'lists') { return [{ type: 'createListCard' }, ...processUserLists(pages)]; }
     if (viewMode === 'timeline') return null;
     let processedPages = pages;
-    if (state.filter === CONFIG.statusRead) {
-        processedPages = pages.where(p => p.status === CONFIG.statusRead);
-    } else if (state.filter === CONGIG.statusList) {
-        // Strict filter: Check if the status explicitly matches one of your 'unread' statuses
-        // (Uses lowercase check to handle "Unread" vs "unread" automatically)
+    if (state.filter === CONFIG.statusRead) processedPages = pages.where(p => p.status === CONFIG.statusRead);
+    else if (state.filter === 'list') {
+        // Strict filter: Only show books that match statusList OR statusListAlt
         processedPages = pages.where(p => {
-            if (!p.status) return false; // Hide books with NO status
+            if (!p.status) return false; // Ignore books with no status
             const s = String(p.status).toLowerCase();
-            const targets = Array.isArray(CONFIG.statusList) ? CONFIG.statusList.map(t => t.toLowerCase()) : [CONFIG.statusList.toLowerCase()];
-            return targets.includes(s);
+            return s === CONFIG.statusList.toLowerCase() || s === CONFIG.statusListAlt.toLowerCase();
         });
     }
     
@@ -783,7 +781,7 @@ if (m.readDateObjs && m.readDateObjs.length > 0) {
         backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); closeModal(); };
         backdrop.onclick = (e) => { if(e.target === backdrop) closeModal(); };
         backdrop.querySelector('#btn-open-note').onclick = (e) => { e.stopPropagation(); closeModal(); app.workspace.openLinkText(m.file.path, currentFilePath); };
-        const btnToggle = backdrop.querySelector('#btn-status-toggle'); btnToggle.onclick = async (e) => { e.stopPropagation(); const targetUnread = Array.isArray(CONFIG.statusList) ? CONFIG.statusList[0] : CONFIG.statusList; const newStatus = m.status === CONFIG.statusRead ? targetUnread : CONFIG.statusRead; btnToggle.textContent = "Updating..."; btnToggle.style.opacity = "0.7"; await updateFileStatus(m.path, newStatus); closeModal(); };
+        const btnToggle = backdrop.querySelector('#btn-status-toggle'); btnToggle.onclick = async (e) => { e.stopPropagation(); const newStatus = m.status === CONFIG.statusRead ? CONFIG.statusList : CONFIG.statusRead; btnToggle.textContent = "Updating..."; btnToggle.style.opacity = "0.7"; await updateFileStatus(m.path, newStatus); closeModal(); };
         const btnReread = backdrop.querySelector('#btn-reread'); btnReread.onclick = async (e) => { e.stopPropagation(); btnReread.innerHTML = Icons.check; await addRereadLog(m.path); closeModal(); };
         if(parentStack) { backdrop.querySelector('.back-btn').onclick = (e) => { e.stopPropagation(); closeModal(); setTimeout(() => openSeriesModal(parentStack), 250); }; }
     }, 50);
@@ -909,7 +907,7 @@ const createSegBtn = (txt, id) => {
     }; 
     return btn; 
 };
-createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusRead); createSegBtn("Unread", 'CONFIG.statusList'); createSegBtn("Shelves", 'lists');
+createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusRead); createSegBtn("Shelves", 'lists');
 
 // RIGHT: TOOLS
 const navRight = navIsland.createEl("div", { cls: "nav-grp end tool-kit" });
