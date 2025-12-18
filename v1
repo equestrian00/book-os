@@ -392,6 +392,24 @@ function extractAllGenres(pages) {
     return Array.from(genreSet).sort();
 }
 
+function extractAllBadges(pages) {
+    const badgeSet = new Set();
+    pages.forEach(p => {
+        if (p.badges) {
+            let list = Array.isArray(p.badges) ? p.badges : String(p.badges).split(',');
+            list.forEach(b => {
+                const clean = cleanText(b);
+                if (clean) {
+                    // Convert to Title Case
+                    const titleCased = clean.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                    badgeSet.add(titleCased);
+                }
+            });
+        }
+    });
+    return Array.from(badgeSet).sort();
+}
+
 function processUserLists(pages) {
     const listMap = {};
     const systemLists = getSystemLists(); 
@@ -815,7 +833,7 @@ root.innerHTML = ""; root.className = "eth-ui-wrapper";
 const ambientBg = root.createEl("div", { cls: "eth-ambient-bg" });
 let rawPages = dv.pages(CONFIG.folder).where(p => p.file.name !== "_BookOS_Lists"); 
 const availableGenres = extractAllGenres(rawPages); 
-const techFilters = ['4K', 'HDR', 'IMAX', 'ATMOS'];
+const availableBadges = extractAllBadges(rawPages);
 
 const headerWrapper = root.createEl("div", { cls: "eth-header-wrapper" });
 const navIsland = headerWrapper.createEl("div", { cls: "eth-nav-island floating-hud" });
@@ -983,7 +1001,7 @@ const createCatChip = (container, txt, id, isSpecial = false) => {
 };
 createCatChip(rowSpecial, "All", "all", true);
 createCatChip(rowSpecial, "Series", "series", true);
-techFilters.forEach(tf => createCatChip(rowSpecial, tf, tf));
+availableBadges.forEach(b => createCatChip(rowSpecial, b, b));
 vmGroup3.createEl("div", { cls: "menu-separator" });
 const rowGenres = vmGroup3.createEl("div", { cls: "chip-cloud" });
 availableGenres.forEach(g => createCatChip(rowGenres, g, g));
