@@ -881,7 +881,7 @@ const headerWrapper = root.createEl("div", { cls: "eth-header-wrapper" });
 const navIsland = headerWrapper.createEl("div", { cls: "eth-nav-island floating-hud" });
 
 // LEFT: BRAND
-const navLeft = navIsland.createEl("div", { cls: "nav-grp start brand-area" });
+// const navLeft = navIsland.createEl("div", { cls: "nav-grp start brand-area" });
 // const logo = navLeft.createEl("div", { cls: "eth-logo-mini" }); logo.innerHTML = Icons.logo; 
 // const brandTitle = navLeft.createEl("div", { cls: "eth-brand-title", text: "Book OS" });
 
