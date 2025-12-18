@@ -301,11 +301,14 @@ function calculateAnalytics(pages) {
     const years = {};
     const typeCounts = { fiction: 0, nonfiction: 0 };
     const lenCounts = { short: 0, novella: 0, medium: 0, long: 0, epic: 0 };
+    
+    // NEW: Explicit TBR Counter
+    let explicitTBR = 0;
 
     pages.forEach(p => {
         const m = getMovieData(p);
         
-        // 1. Length Buckets (All books, read or unread)
+        // 1. Length Buckets
         const pg = m.runtimeMins || 0;
         if (pg > 0) {
             if (pg <= 60) lenCounts.short++;
@@ -315,24 +318,40 @@ function calculateAnalytics(pages) {
             else lenCounts.epic++;
         }
 
-        // 2. Type Tracking (Fiction vs Nonfiction)
+        // 2. Type Tracking
         const t = String(p.type || "").toLowerCase();
         if (t.includes('non')) typeCounts.nonfiction++;
         else typeCounts.fiction++;
 
-        // 3. General Stats (Read books only)
+        // 3. Status Logic
         const status = String(m.status || "").toLowerCase();
-        // Check for read status
-        if (status.includes('read') || status.includes('izlendi') || m.readDates.length > 0) {
+        const configRead = (CONFIG.statusRead || "read").toLowerCase();
+        const configUnread1 = (CONFIG.statusList || "unread").toLowerCase();
+        const configUnread2 = (CONFIG.statusListAlt || "tbr").toLowerCase();
+
+        // STRICT READ CHECK: Must match "read" exactly OR have a log date
+        // (Removing .includes('read') prevents 'unread' from triggering this)
+        const isRead = status === configRead || status === 'izlendi' || m.readDates.length > 0;
+
+        // STRICT TBR CHECK: Matches your Unread or TBR status
+        const isTBR = status === configUnread1 || status === configUnread2;
+
+        if (isRead) {
             totalRead++; 
             totalMins += pg;
             if(m.score > 0) { totalScore += m.score; scoreCount++; }
             if(m.spicerating > 0) { totalSpice += m.spicerating; spiceCount++; }
             if(m.year) years[m.year] = (years[m.year] || 0) + 1;
             
-            // Genres & Tropes
             m.allGenres.forEach(g => { genres[g] = (genres[g] || 0) + 1; });
             if(m.tropes && m.tropes.length > 0) { m.tropes.forEach(a => { actors[a] = (actors[a] || 0) + 1; }); }
+        } else if (isTBR) {
+            // Count it as TBR if it explicitly matches your unread statuses
+            explicitTBR++;
+        } else {
+            // Optional: If a book has NO status, should it be TBR?
+            // Uncomment the line below to count "no status" books as TBR too
+            // explicitTBR++; 
         }
         
         // 4. Author Counts (All books)
@@ -346,24 +365,23 @@ function calculateAnalytics(pages) {
     const avgScore = scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : "0.0";
     const topYearEntry = Object.entries(years).sort((a,b) => b[1] - a[1])[0];
     const topYear = topYearEntry ? topYearEntry[0] : "-";
-
-    const totalBooks = pages.length;
     
     return { 
         totalRead, 
-        tbrCount: totalBooks - totalRead, // TBR Calculation
+        tbrCount: explicitTBR, // Uses the strict count now
         totalDuration: formatLongDuration(totalMins), 
         avgScore, 
         topYear, 
         topGenres: getTop(genres, 8), 
-        totalGenresCount: Object.keys(genres).length, // Unique Genres
+        totalGenresCount: Object.keys(genres).length,
         topAuthors: getTop(authors, 8), 
-        totalAuthorsCount: Object.keys(authors).length, // Unique Authors
+        totalAuthorsCount: Object.keys(authors).length,
         topActors: getTop(actors, 8),
-        lenCounts, // Length Distribution
-        typeCounts // Fiction/Nonfiction
+        lenCounts, 
+        typeCounts
     };
 }
+
 function getMovieData(page) {
     const p = page;
     const rawYear = p.year || p.Year || p.yil || p.release_date;
