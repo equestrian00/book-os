@@ -909,26 +909,121 @@ function openMovieModal(m, parentStack = null) {
     setTimeout(() => {
         const backdrop = document.createElement('div');
         backdrop.className = 'eth-modal-backdrop';
+        
+        // --- DATA PREP ---
         const tropesHtml = m.tropes.length > 0 ? `<div class="eth-chips-grid">${m.tropes.slice(0, 12).map(c => `<div class="chip">● ${c}</div>`).join('')}</div>` : `<span class="muted-text">No tropes info.</span>`;
         const badgeHtml = m.badges.map(b => `<span class="badge">${b}</span>`).join('');
-        let logHtml = '';
-if (m.readDateObjs && m.readDateObjs.length > 0) {
-    const sortedLogs = [...m.readDateObjs].sort((a,b) => b - a).slice(0, 7);
-    logHtml = `<div class="log-box"><div class="log-head">READING LOG</div>${sortedLogs.map(d => `<div class="log-row"><span>${Icons.check}</span> ${formatDateDisplay(d)}</div>`).join('')}</div>`;
-}
         const prettyRuntime = formatDuration(m.pages);
         const dateAdded = m.created ? formatDateDisplay(m.created) : "Unknown";
         const backButton = parentStack ? `<button class="nav-btn back-btn" title="Go Back">${Icons.back} <span>Back</span></button>` : '';
         const isRead = m.status === CONFIG.statusRead;
-        const btnStatusHtml = `<div class="status-control-row"><button id="btn-status-toggle" class="status-indicator ${isRead ? 'read' : 'list'}" data-path="${m.path}">${isRead ? 'READ' : 'TO BE READ'}</button><button id="btn-reread" class="reread-btn" title="Logged Re-Read">${Icons.reread}</button></div>`;
-        backdrop.innerHTML = `<div class="eth-modal-panel movie-mode wide-screen"><div class="panel-bg" style="background-image: url('${m.cover}')"></div><div class="panel-overlay"></div><div class="panel-nav">${backButton}<button class="nav-btn close-btn">${Icons.close}</button></div><div class="panel-content"><div class="p-col-left"><img src="${m.cover}" class="poster-frame" />${m.score > 0 ? `<div class="poster-rating-badge"><span class="pr-label">MY RATING</span><div style="display:flex; align-items:center; justify-content:center; gap:10px;"><div class="pr-val">${Icons.star} ${m.score}</div><div class="sp-val"> ${Icons.pepper} ${m.spicerating}</div><div class="lan-val"> ${Icons.lanwarn} ${m.languageDisplay}</div></div></div>` : ''}</div><div class="p-col-center"><div class="meta-tags-hero">${m.displayGenres.split('•').map(g => `<span class="hero-tag">${g.trim()}</span>`).join('')}</div><h1 class="movie-title">${m.title}</h1><div class="info-grid"><div class="info-item"><span class="ii-label">PAGES</span><span class="ii-val">${prettyRuntime}</span></div><div class="info-item"><span class="ii-label">YEAR</span><span class="ii-val">${m.year}</span></div></div><div class="eth-plot-box"><p class="movie-plot">${m.description}</p></div><div class="section-title">TROPES</div>${tropesHtml}</div><div class="p-col-right"><div class="ticket-card full-info"><div class="tc-header" style="background:${m.color}">BOOK TICKET</div><div class="tc-body"><div class="tc-data-group"><div class="tc-row signature-row"><span>AUTHOR</span><div class="director-sign">${m.author}</div></div><div class="tc-row"><span>DATE ADDED</span><b>${dateAdded}</b></div><br><div class="tc-status-area">${btnStatusHtml}${logHtml}</div></div><div class="tc-footer"><div class="barcode-mini">${Icons.barcode}</div><button id="btn-open-note" class="action-btn">OPEN NOTE</button></div></div></div></div></div>`;
+        
+        // --- READING LOG GENERATION (LIBRARY GRID STYLE) ---
+        // We want to fill the grid with lines, even if empty
+        let logRows = [];
+        const maxLines = 6; // Number of lines on the card
+        
+        // Add existing logs
+        if (m.readDateObjs && m.readDateObjs.length > 0) {
+            const sortedLogs = [...m.readDateObjs].sort((a,b) => b - a).slice(0, maxLines);
+            sortedLogs.forEach(d => {
+                logRows.push(`<div class="lc-grid-row filled"><div class="lc-col-sign">${Icons.check}</div><div class="lc-col-date">${formatDateDisplay(d)}</div></div>`);
+            });
+        }
+        
+        // Fill remaining lines with empty ruled lines
+        while (logRows.length < maxLines) {
+            logRows.push(`<div class="lc-grid-row empty"><div class="lc-col-sign"></div><div class="lc-col-date"></div></div>`);
+        }
+        const logGridHtml = logRows.join('');
+
+        // --- CONTROLS ---
+        // Small buttons for the bottom
+        const btnStatusHtml = `<button id="btn-status-toggle" class="lc-btn ${isRead ? 'read' : ''}">${isRead ? 'READ' : 'TBR'}</button>`;
+        const btnRereadHtml = `<button id="btn-reread" class="lc-btn icon-only" title="Log Reread">${Icons.reread}</button>`;
+        const btnNoteHtml = `<button id="btn-open-note" class="lc-btn icon-only" title="Open Note">${Icons.edit}</button>`;
+
+        backdrop.innerHTML = `
+        <div class="eth-modal-panel movie-mode wide-screen">
+            <div class="panel-bg" style="background-image: url('${m.cover}')"></div>
+            <div class="panel-overlay"></div>
+            <div class="panel-nav">${backButton}<button class="nav-btn close-btn">${Icons.close}</button></div>
+            
+            <div class="panel-content">
+                <div class="p-col-left">
+                    <img src="${m.cover}" class="poster-frame" />
+                    ${m.score > 0 ? `<div class="poster-rating-badge"><span class="pr-label">MY RATING</span><div style="display:flex; align-items:center; justify-content:center; gap:10px;"><div class="pr-val">${Icons.star} ${m.score}</div><div class="sp-val"> ${Icons.pepper} ${m.spicerating}</div></div></div>` : ''}
+                </div>
+
+                <div class="p-col-center">
+                    <div class="meta-tags-hero">${m.displayGenres.split('•').map(g => `<span class="hero-tag">${g.trim()}</span>`).join('')}</div>
+                    <h1 class="movie-title">${m.title}</h1>
+                    <div class="info-grid">
+                        <div class="info-item"><span class="ii-label">PAGES</span><span class="ii-val">${prettyRuntime}</span></div>
+                        <div class="info-item"><span class="ii-label">YEAR</span><span class="ii-val">${m.year}</span></div>
+                    </div>
+                    <div class="eth-plot-box"><p class="movie-plot">${m.description}</p></div>
+                    <div class="section-title">TROPES</div>${tropesHtml}
+                </div>
+
+                <div class="p-col-right">
+                    <div class="ticket-card library-card">
+                        <div class="lc-header">Library Card</div>
+                        
+                        <div class="lc-meta-section">
+                            <div class="lc-field author">
+                                <span class="lc-label">AUTHOR</span>
+                                <div class="lc-handwriting">${m.author}</div>
+                            </div>
+                            <div class="lc-field added">
+                                <span class="lc-label">ADDED</span>
+                                <div class="lc-stamp">${dateAdded}</div>
+                            </div>
+                        </div>
+
+                        <div class="lc-log-container">
+                            <div class="lc-grid-header">
+                                <span class="h-sign">READ</span>
+                                <span class="h-date">DATE</span>
+                            </div>
+                            <div class="lc-grid-body">
+                                ${logGridHtml}
+                            </div>
+                        </div>
+
+                        <div class="lc-footer">
+                            <div class="barcode-mini">${Icons.barcode}</div>
+                            <div class="lc-actions-row">
+                                ${btnStatusHtml}
+                                ${btnRereadHtml}
+                                ${btnNoteHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        
         document.body.appendChild(backdrop);
         requestAnimationFrame(() => backdrop.classList.add('active'));
+        
+        // Handlers
         backdrop.querySelector('.close-btn').onclick = (e) => { e.stopPropagation(); closeModal(); };
         backdrop.onclick = (e) => { if(e.target === backdrop) closeModal(); };
+        
         backdrop.querySelector('#btn-open-note').onclick = (e) => { e.stopPropagation(); closeModal(); app.workspace.openLinkText(m.file.path, currentFilePath); };
-        const btnToggle = backdrop.querySelector('#btn-status-toggle'); btnToggle.onclick = async (e) => { e.stopPropagation(); const newStatus = m.status === CONFIG.statusRead ? CONFIG.statusList : CONFIG.statusRead; btnToggle.textContent = "Updating..."; btnToggle.style.opacity = "0.7"; await updateFileStatus(m.path, newStatus); closeModal(); };
-        const btnReread = backdrop.querySelector('#btn-reread'); btnReread.onclick = async (e) => { e.stopPropagation(); btnReread.innerHTML = Icons.check; await addRereadLog(m.path); closeModal(); };
+        
+        const btnToggle = backdrop.querySelector('#btn-status-toggle'); 
+        btnToggle.onclick = async (e) => { 
+            e.stopPropagation(); 
+            const newStatus = m.status === CONFIG.statusRead ? CONFIG.statusList : CONFIG.statusRead; 
+            btnToggle.textContent = "..."; 
+            await updateFileStatus(m.path, newStatus); closeModal(); 
+        };
+        
+        const btnReread = backdrop.querySelector('#btn-reread');
+        btnReread.onclick = async (e) => { e.stopPropagation(); btnReread.innerHTML = Icons.check; await addRereadLog(m.path); closeModal(); };
+
         if(parentStack) { backdrop.querySelector('.back-btn').onclick = (e) => { e.stopPropagation(); closeModal(); setTimeout(() => openSeriesModal(parentStack), 250); }; }
     }, 50);
 }
