@@ -700,7 +700,7 @@ function openAnalyticsModal() {
                         <div class="shc-label">READ</div>
                     </div>
                     <div class="stat-hero-card">
-                        <div class="shc-val" style="color:var(--gold);">${data.tbrCount}</div>
+                        <div class="shc-val">${data.tbrCount}</div>
                         <div class="shc-label">TBR</div>
                     </div>
                     <div class="stat-hero-card">
