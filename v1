@@ -669,7 +669,13 @@ function openAnalyticsModal() {
         const lc = data.lenCounts;
         const totalLen = lc.short + lc.novella + lc.medium + lc.long + lc.epic || 1;
         // Colors for pie slices
-        const pieColors = { short: '#22c55e', novella: '#06b6d4', medium: '#6366f1', long: '#a855f7', epic: '#ef4444' };
+        const pieColors = { 
+    short: 'var(--len-short)', 
+    novella: 'var(--len-novella)', 
+    medium: 'var(--len-medium)', 
+    long: 'var(--len-long)', 
+    epic: 'var(--len-epic)' 
+};
         
         let deg = 0;
         const slices = [];
