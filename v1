@@ -377,6 +377,7 @@ function calculateAnalytics(pages) {
         topAuthors: getTop(authors, 8), 
         totalAuthorsCount: Object.keys(authors).length,
         topActors: getTop(actors, 8),
+        totalTropesCount: Object.keys(actors).length,
         lenCounts, 
         typeCounts
     };
@@ -776,7 +777,7 @@ function openAnalyticsModal() {
                     </div>
 
                     <div class="stat-panel">
-                        <h3>TOP TROPES</h3>
+                        <h3>TOP TROPES <span class="header-count">(of ${data.totalTropesCount})</span></h3>
                         <div class="simple-list">
                             ${data.topActors.map((d,i) => `
                             <div class="sl-row">
