@@ -668,34 +668,38 @@ function openAnalyticsModal() {
         // --- PIE CHART CALCULATION ---
         const lc = data.lenCounts;
         const totalLen = lc.short + lc.novella + lc.medium + lc.long + lc.epic || 1;
-        // Colors for pie slices
+        
+        // Colors for pie slices (Using CSS variables)
         const pieColors = { 
-    short: 'var(--len-short)', 
-    novella: 'var(--len-novella)', 
-    medium: 'var(--len-medium)', 
-    long: 'var(--len-long)', 
-    epic: 'var(--len-epic)' 
-};
+            short: 'var(--len-short)', 
+            novella: 'var(--len-novella)', 
+            medium: 'var(--len-medium)', 
+            long: 'var(--len-long)', 
+            epic: 'var(--len-epic)' 
+        };
         
         let deg = 0;
         const slices = [];
-const addSlice = (key, val) => {
+        
+        // HELPER: Adds slice + white line separator
+        const addSlice = (key, val) => {
             const pct = (val / totalLen) * 360;
             if (val > 0) {
                 // 1. The colored slice
                 slices.push(`${pieColors[key]} ${deg}deg ${deg + pct}deg`);
-                
                 // 2. The white separator line (1 degree wide)
-                // Use '#ffffff' for white, or 'var(--bg-root)' if you want transparent-looking gaps
                 slices.push(`#ffffff ${deg + pct}deg ${deg + pct + 1}deg`); 
-                
                 // 3. Increment degree counter (slice + gap)
                 deg += pct + 1;
             }
         };
-
-        addSlice('short', lc.short); addSlice('novella', lc.novella); addSlice('medium', lc.medium);
-        addSlice('long', lc.long); addSlice('epic', lc.epic);
+        
+        addSlice('short', lc.short); 
+        addSlice('novella', lc.novella); 
+        addSlice('medium', lc.medium);
+        addSlice('long', lc.long); 
+        addSlice('epic', lc.epic);
+        
         const pieGradient = slices.join(', ');
 
         // --- TYPE BAR CALCULATION ---
