@@ -688,7 +688,7 @@ function openAnalyticsModal() {
                 // 1. The colored slice
                 slices.push(`${pieColors[key]} ${deg}deg ${deg + pct}deg`);
                 // 2. The white separator line (1 degree wide)
-                slices.push(`#ffffff ${deg + pct}deg ${deg + pct + 1}deg`); 
+                slices.push(`#ffffff ${deg + pct}deg ${deg + pct + 0}deg`); 
                 // 3. Increment degree counter (slice + gap)
                 deg += pct + 1;
             }
