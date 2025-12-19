@@ -693,14 +693,7 @@ const addSlice = (key, val) => {
                 deg += pct + 1;
             }
         };
-        // Helper to build gradient string
-        const addSlice = (key, val) => {
-            const pct = (val / totalLen) * 360;
-            if (val > 0) {
-                slices.push(`${pieColors[key]} ${deg}deg ${deg + pct}deg`);
-                deg += pct;
-            }
-        };
+
         addSlice('short', lc.short); addSlice('novella', lc.novella); addSlice('medium', lc.medium);
         addSlice('long', lc.long); addSlice('epic', lc.epic);
         const pieGradient = slices.join(', ');
