@@ -385,7 +385,7 @@ function calculateAnalytics(pages) {
 
 function getMovieData(page) {
     const p = page;
-    let rawTitle = p.title || p.file.name;
+    let rawTitle = p.file.name;
     const title = rawTitle.split(/ by /i)[0].trim();
     const rawYear = p.year || p.Year || p.yil || p.release_date;
     const year = rawYear ? Number(String(rawYear).match(/\d{4}/)?.[0]) || 0 : 0;
