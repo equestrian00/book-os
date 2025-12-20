@@ -385,6 +385,8 @@ function calculateAnalytics(pages) {
 
 function getMovieData(page) {
     const p = page;
+    let rawTitle = p.title || p.file.name;
+    const title = rawTitle.split(/ by /i)[0].trim();
     const rawYear = p.year || p.Year || p.yil || p.release_date;
     const year = rawYear ? Number(String(rawYear).match(/\d{4}/)?.[0]) || 0 : 0;
     const booknumber = p.booknumber || null; 
@@ -432,7 +434,7 @@ const rawLang = p.languagerating ? String(p.languagerating) : "";
     const formattedReadDates = readDates.map(d => formatDateDisplay(d));
     let finalCover = p.cover; if (!finalCover || finalCover.length < 5) finalCover = CONFIG.imagePlaceholder;
     return {
-        file: p.file, title: p.file.name, path: p.file.path, 
+        file: p.file, title, path: p.file.path, 
         cover: finalCover, seriesCover: p.series_cover || null,
         year, released, score: Number(myScore), scoreLB: Number(lbScore), displayScore: Number(displayScore).toFixed(1),
         pages: p.pageCount || 0, 
