@@ -16,6 +16,17 @@ const CONFIG = {
     listsDbPath: "" // Enter any file path
 };
 
+// --- 1.1 BADGE CONFIGURATION ---
+// Key: The text in your YAML (lowercase)
+// Symbol: What shows on the Book Card
+// Label: What shows in the Filter Menu
+const BADGE_CONFIG = {
+    "favorite": { symbol: "♥", label: "Favorite" },
+    "reread":   { symbol: "⟳", label: "Reread" },
+    "owned":    { symbol: "OW", label: "Owned" }, 
+    "dnf":      { symbol: "DNF", label: "Did Not Finish" }
+};
+
 const GenreColors = {
     "action": "#ef4444", "adventure": "#f97316", "autobiography": "#06b6d4",
     "comedy": "#eab308", "crime": "#71717a", "contemporary": "#8b5cf6",
@@ -99,7 +110,18 @@ function formatDuration(pages) {
     return `${pages}`; 
 }
 
-function getBadges(p) { const tags = (Array.isArray(p.badges) ? p.badges.join(' ') : (p.badges||'')); const lower = tags.toLowerCase(); const badges = []; if (lower.includes('favorite')) badges.push('♥'); if (lower.includes('reread')) badges.push('⟳'); return badges; }
+function getBadges(p) { 
+    const tags = (Array.isArray(p.badges) ? p.badges.join(' ') : (p.badges||'')).toLowerCase(); 
+    const badges = [];
+    
+    // Iterate through config to find matches
+    for (const [key, config] of Object.entries(BADGE_CONFIG)) {
+        if (tags.includes(key.toLowerCase())) {
+            badges.push(config.symbol);
+        }
+    }
+    return badges; 
+}
 
 function parseDateSafe(input) { 
     if (!input) return null; 
@@ -492,21 +514,17 @@ function extractAllAuthors(pages) {
 }
 
 function extractAllBadges(pages) {
-    const badgeSet = new Set();
+    const foundKeys = new Set();
     pages.forEach(p => {
         if (p.badges) {
-            let list = Array.isArray(p.badges) ? p.badges : String(p.badges).split(',');
-            list.forEach(b => {
-                const clean = cleanText(b);
-                if (clean) {
-                    // Convert to Title Case
-                    const titleCased = clean.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                    badgeSet.add(titleCased);
-                }
+            const list = (Array.isArray(p.badges) ? p.badges.join(' ') : String(p.badges)).toLowerCase();
+            // Check which config keys exist in this book's badges
+            Object.keys(BADGE_CONFIG).forEach(key => {
+                if (list.includes(key)) foundKeys.add(key);
             });
         }
     });
-    return Array.from(badgeSet).sort();
+    return Array.from(foundKeys).sort();
 }
 
 function processUserLists(pages) {
@@ -570,8 +588,18 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
             // Normalize everything to lowercase for case-insensitive matching
             const checkList = rawCheckList.map(x => String(x).toLowerCase());
             
-            // Check if the selected filter (normalized) exists in the book's data
-            matchCat = checkList.includes(categoryMode.toLowerCase());
+// LOGIC CHANGE: Resolve config symbols if applicable
+            let filterTarget = categoryMode.toLowerCase();
+            const badgeCfg = BADGE_CONFIG[filterTarget];
+            
+            // If we are filtering by a known badge key (e.g. 'favorite'), look for its symbol ('♥')
+            if (badgeCfg) {
+                filterTarget = badgeCfg.symbol.toLowerCase();
+            }
+
+            // Check if the selected filter exists in the book's data
+            matchCat = checkList.includes(filterTarget);
+        }
         }
         
         // 2. Dual Range Filters
@@ -1289,8 +1317,11 @@ const createCatChip = (container, txt, id, isSpecial = false) => {
 };
 createCatChip(rowSpecial, "All", "all", true);
 createCatChip(rowSpecial, "Series", "series", true);
-availableBadges.forEach(b => createCatChip(rowSpecial, b, b));
-const rowGenres = vmGroup3.createEl("div", { cls: "chip-cloud" });
+// GENERATE BADGE CHIPS FROM CONFIG
+availableBadges.forEach(key => {
+    const label = BADGE_CONFIG[key] ? BADGE_CONFIG[key].label : key;
+    createCatChip(rowSpecial, label, key);
+});const rowGenres = vmGroup3.createEl("div", { cls: "chip-cloud" });
 availableGenres.forEach(g => createCatChip(rowGenres, g, g));
 vmGroup3.createEl("div", { cls: "menu-label", text: "AUTHORS" });
 const rowAuthors = vmGroup3.createEl("div", { cls: "chip-cloud" });
