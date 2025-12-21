@@ -600,7 +600,6 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
             // Check if the selected filter exists in the book's data
             matchCat = checkList.includes(filterTarget);
         }
-        }
         
         // 2. Dual Range Filters
         // Range: [min, max]
