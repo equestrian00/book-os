@@ -13,7 +13,7 @@ const CONFIG = {
     statusList: "unread",  
     statusListAlt: "TBR",
     imagePlaceholder: NO_POSTER_SVG,  
-    listsDbPath: "" // Enter any file path
+    listsDbPath: "Data/Storage/Other/BookOS_Lists.md" // Enter any file path
 };
 
 // --- 1.1 BADGE CONFIGURATION ---
