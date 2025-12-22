@@ -455,8 +455,14 @@ const rawLang = p.languagerating ? String(p.languagerating) : "";
     }
     if (readDates.length === 0 && p.status === CONFIG.statusRead) readDates.push(created);
     const formattedReadDates = readDates.map(d => formatDateDisplay(d));
-    let finalCover = p.cover; if (!finalCover || finalCover.length < 5) finalCover = CONFIG.imagePlaceholder;
-    return {
+    let finalCover = p.cover; 
+        if (finalCover) {
+        // This removes ![]() wrapping if it exists, leaving just the URL
+        finalCover = String(finalCover).trim().replace(/!\[.*?\]\((.*?)\)/, '$1');
+    }    
+    if (!finalCover || finalCover.length < 5) finalCover = CONFIG.imagePlaceholder;
+    
+   return {
         file: p.file, title, path: p.file.path, 
         cover: finalCover, seriesCover: p.series_cover || null,
         year, released, score: Number(myScore), scoreLB: Number(lbScore), displayScore: Number(displayScore).toFixed(1),
