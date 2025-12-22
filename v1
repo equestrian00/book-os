@@ -24,7 +24,8 @@ const BADGE_CONFIG = {
     "favorite": { symbol: "♥", label: "Favorite" },
     "reread":   { symbol: "⟳", label: "Reread" },
     "owned":    { symbol: "OW", label: "Owned" }, 
-    "dnf":      { symbol: "DNF", label: "Did Not Finish" }
+    "dnf":      { symbol: "DNF", label: "Did Not Finish" },
+    "uploadIP": { symbol: "⇡", label: "Upload In Progress" }
 };
 
 const GenreColors = {
