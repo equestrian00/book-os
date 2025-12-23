@@ -26,6 +26,8 @@ const BADGE_CONFIG = {
     "owned":    { symbol: "OW", label: "Owned" }, 
     "dnf":      { symbol: "DNF", label: "DNF" },
     "uploading": { symbol: "⇡", label: "Uploading" },
+    "Book Funnel": { symbol: "BF", label: "Book Funnel" },
+    "KU": { symbol: "KU", label: "KU" },
     "unpublished": { symbol: "🖋", label: "Unpublished" }
 };
 
