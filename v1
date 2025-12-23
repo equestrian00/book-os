@@ -43,6 +43,8 @@ const initialState = {
     categoryMode: 'all', viewMode: 'grid', gridSize: 200,
     rangeMy: [0, 5], rangeYear: [1920, 2030], rangeSpice: [0, 5], selectedTropes: [],
     showMenu: false, innerViewMode: 'list'
+    currentPage: 1, 
+    itemsPerPage: 24 // Number of books per page
 };
 
 // Deep copy for reset
@@ -1427,12 +1429,38 @@ window.openMovieModalFromTimeline = (path) => { const page = app.metadataCache.g
 function renderApp() { 
     updateMenuVisuals(); 
     contentArea.innerHTML = ""; contentArea.className = `eth-content-area view-${state.viewMode}`; 
+    
+    // 1. Filter Search
     let pages = rawPages; 
     if (state.search) pages = pages.where(p => p.file.name.toLowerCase().includes(state.search.toLowerCase())); 
+    
+    // 2. Timeline View (No Pagination needed usually, or handled differently)
     if (state.viewMode === 'timeline') { contentArea.innerHTML = renderTimeline(pages); return; } 
-    const displayItems = processItems(pages, state.sortMode, state.sortDir, state.viewMode, state.categoryMode); 
-    if (state.filter === 'lists' && (!displayItems || displayItems.length === 0 || displayItems[0].type !== 'createListCard')) { displayItems.unshift({ type: 'createListCard' }); }
-    if (!displayItems || displayItems.length === 0) { contentArea.innerHTML = `<div class="eth-empty-state">No books found.</div>`; return; } 
+
+    // 3. Process All Items
+    let allItems = processItems(pages, state.sortMode, state.sortDir, state.viewMode, state.categoryMode); 
+    
+    // 4. Handle "Create List" Card
+    if (state.filter === 'lists' && (!allItems || allItems.length === 0 || allItems[0].type !== 'createListCard')) { 
+        allItems.unshift({ type: 'createListCard' }); 
+    }
+
+    if (!allItems || allItems.length === 0) { contentArea.innerHTML = `<div class="eth-empty-state">No books found.</div>`; return; } 
+
+    // --- PAGINATION LOGIC START ---
+    const totalItems = allItems.length;
+    const totalPages = Math.ceil(totalItems / state.itemsPerPage);
+
+    // Auto-reset page if filters reduce results (e.g. going from Page 5 to a filter with only 1 page)
+    if (state.currentPage > totalPages) state.currentPage = 1;
+    if (state.currentPage < 1) state.currentPage = 1;
+
+    const startIndex = (state.currentPage - 1) * state.itemsPerPage;
+    const endIndex = startIndex + state.itemsPerPage;
+    const displayItems = allItems.slice(startIndex, endIndex);
+    // --- PAGINATION LOGIC END ---
+
+    // 5. Render Items
     displayItems.forEach(item => { 
         if (item.type === 'createListCard') {
             const card = contentArea.createEl("div", { cls: "eth-card create-list-card" });
@@ -1441,56 +1469,76 @@ function renderApp() {
         } 
         else if (item.type === 'stack' || item.type === 'userList') { 
             const card = contentArea.createEl("div", { cls: "eth-card stack-card" }); 
-            
-            // IMPORTANT: Inject specific color variable for CSS to use on hover
             card.style.setProperty('--accent', item.color);
-
             const badgeText = item.type === 'userList' ? 'LIST' : 'SERIES';
             const deleteBtn = item.type === 'userList' ? `<div class="stack-delete-btn" title="Delete Shelf">${Icons.trash}</div>` : '';
             const subText = item.type === 'userList' ? (item.desc || '') : (item.desc || 'Series');
-
-            // SIMPLIFIED HTML: Removed stack-layer divs for cleaner classic look
             card.innerHTML = `
             <div class="eth-card-cover">
                 <div class="stack-main-poster" style="background-image: url('${item.cover}')">
-                    <div class="eth-card-overlay">
-                        <div class="eth-play-circle sm">OPEN</div>
-                    </div>
-                    <div class="stack-top-badge">${badgeText}</div>
-                    ${deleteBtn}
+                    <div class="eth-card-overlay"><div class="eth-play-circle sm">OPEN</div></div>
+                    <div class="stack-top-badge">${badgeText}</div>${deleteBtn}
                     <div class="stack-glass-bar">
-                        <div class="sgb-info">
-                            <span>${Icons.layers} ${item.count} Books</span>
-                            <span class="sgb-count">${item.read}/${item.count}</span>
-                        </div>
-                        <div class="sgb-track">
-                            <div class="sgb-fill" style="width: ${item.progress}%; background:${item.color}"></div>
-                        </div>
+                        <div class="sgb-info"><span>${Icons.layers} ${item.count} Books</span><span class="sgb-count">${item.read}/${item.count}</span></div>
+                        <div class="sgb-track"><div class="sgb-fill" style="width: ${item.progress}%; background:${item.color}"></div></div>
                     </div>
                 </div>
             </div>
-            <div class="eth-card-meta">
-                <div class="title">${item.title}</div>
-                <div class="sub" style="color:${item.color}">${subText}</div>
-            </div>`;
-
+            <div class="eth-card-meta"><div class="title">${item.title}</div><div class="sub" style="color:${item.color}">${subText}</div></div>`;
             const delBtnEl = card.querySelector('.stack-delete-btn'); if(delBtnEl) { delBtnEl.onclick = (e) => { e.stopPropagation(); deleteList(item.id, item.title); }; }
             card.onclick = () => openSeriesModal(item); card.onmouseenter = () => { ambientBg.style.backgroundImage = `url('${item.cover}')`; ambientBg.classList.add('active'); }; card.onmouseleave = () => { ambientBg.classList.remove('active'); }; 
         } else { 
             const m = item.data; const isMasterpiece = m.score >= 4.5; const card = contentArea.createEl("div", { cls: isMasterpiece ? "eth-card masterpiece" : "eth-card" }); 
+            card.style.setProperty('--accent', m.color);
             
-            // Inject dynamic color variable
-            card.style.setProperty('--accent', m.color); 
-// --- ADDED: DNF CHECK ---
+            // DNF CHECK
             const isDNF = String(m.status).toLowerCase() === 'dnf';
-            const warnIcon = isDNF ? `<span style="color:#f59e0b; margin-right:3px; display:inline-flex; align-items:center;">${Icons.lanwarn} </span>` : '';
-            // ------------------------
-            
-            const badgeHtml = m.badges.length > 0 ? `<div class="card-badges">${m.badges.slice(0,2).map(b=>`<span>${b}</span>`).join('')}</div>` : ''; 
-            card.innerHTML = `<div class=\"eth-card-cover\" style=\"background-image: url('${m.cover}')\"><div class=\"eth-card-overlay\"><div class=\"eth-play-circle\" style=\"color:${m.color}\">${Icons.book}</div></div>${m.score > 0 ? `<div class=\"eth-rating-badge\">${warnIcon}${Icons.star} ${m.score} ${m.spicerating > 0 ? `<span style="margin-left:6px; opacity:0.8; color: red;">🌶 ${m.spicerating}</span>` : ''}</div>` : ''}${badgeHtml}</div><div class=\"eth-card-meta\"><div class=\"title\" title=\"${m.title}\">${m.title}</div><div class=\"sub\">${m.year} • <span style=\"opacity:0.7; color:${m.color}\">${m.displayGenres}</span></div></div>`; 
-            card.onclick = () => openMovieModal(m); card.onmouseenter = () => { ambientBg.style.backgroundImage = `url('${m.cover}')`; ambientBg.classList.add('active'); }; card.onmouseleave = () => { ambientBg.classList.remove('active'); }; 
+            const warnIcon = isDNF ? `<span style="color:#f59e0b; margin-right:3px; display:inline-flex; align-items:center;">${Icons.lanwarn}</span>` : '';
+
+            const badgeHtml = m.badges.length > 0 ? `<div class="card-badges">${m.badges.slice(0,2).map(b=>`<span>${b}</span>`).join('')}</div>` : '';
+            card.innerHTML = `<div class=\"eth-card-cover\" style=\"background-image: url('${m.cover}')\"><div class=\"eth-card-overlay\"><div class=\"eth-play-circle\" style=\"color:${m.color}\">${Icons.book}</div></div>${m.score > 0 ? `<div class=\"eth-rating-badge\">${warnIcon}${Icons.star} ${m.score} ${m.spicerating > 0 ? `<span style="margin-left:6px; opacity:0.8; color: red;">🌶 ${m.spicerating}</span>` : ''}</div>` : ''}${badgeHtml}</div><div class=\"eth-card-meta\"><div class=\"title\" title=\"${m.title}\">${m.title}</div><div class=\"sub\">${m.year} • <span style=\"opacity:0.7; color:${m.color}\">${m.displayGenres}</span></div></div>`;
+            card.onclick = () => openMovieModal(m); card.onmouseenter = () => { ambientBg.style.backgroundImage = `url('${m.cover}')`; ambientBg.classList.add('active'); };
+            card.onmouseleave = () => { ambientBg.classList.remove('active'); }; 
         } 
     }); 
+
+    // --- 6. Render Pagination Controls ---
+    if (totalPages > 1) {
+        const pagBar = contentArea.createEl("div", { cls: "eth-pagination-bar" });
+        // Style: Spans all columns, centered flexbox
+        pagBar.style.cssText = "grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; gap: 20px; padding: 40px 0 20px 0; width: 100%;";
+        
+        // Prev Button
+        const btnPrev = pagBar.createEl("button", { cls: "action-btn", text: "← Previous" });
+        btnPrev.disabled = state.currentPage === 1;
+        btnPrev.style.opacity = state.currentPage === 1 ? "0.5" : "1";
+        btnPrev.style.cursor = state.currentPage === 1 ? "default" : "pointer";
+        btnPrev.onclick = () => { 
+            if(state.currentPage > 1) { 
+                state.currentPage--; 
+                renderApp(); 
+                contentArea.scrollIntoView({behavior:"smooth", block:"start"}); 
+            }
+        };
+
+        // Info Text
+        const info = pagBar.createEl("span", { text: `Page ${state.currentPage} of ${totalPages}` });
+        info.style.color = "var(--text-muted)";
+        info.style.fontFamily = "var(--font-monospace)";
+
+        // Next Button
+        const btnNext = pagBar.createEl("button", { cls: "action-btn", text: "Next →" });
+        btnNext.disabled = state.currentPage === totalPages;
+        btnNext.style.opacity = state.currentPage === totalPages ? "0.5" : "1";
+        btnNext.style.cursor = state.currentPage === totalPages ? "default" : "pointer";
+        btnNext.onclick = () => { 
+            if(state.currentPage < totalPages) { 
+                state.currentPage++; 
+                renderApp(); 
+                contentArea.scrollIntoView({behavior:"smooth", block:"start"}); 
+            }
+        };
+    }
 }
 renderApp();
 ```
