@@ -41,7 +41,7 @@ const GenreColors = {
 const initialState = {
     filter: 'all', search: '', sortMode: 'created', sortDir: 'desc',
     categoryMode: 'all', viewMode: 'grid', gridSize: 200,
-    rangeMy: [0, 5], rangeYear: [1920, 2030], rangeSpice: [0, 5], selectedTropes: [],
+    rangeMy: [0, 5], rangeYear: [0, 2030], rangeSpice: [0, 5], selectedTropes: [],
     showMenu: false, innerViewMode: 'list'
 };
 
