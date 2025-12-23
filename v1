@@ -704,11 +704,11 @@ function openAnalyticsModal() {
         const data = calculateAnalytics(allPages);
         const maxGenreCount = data.topGenres.length > 0 ? data.topGenres[0][1] : 1;
         
-        // --- PIE CHART CALCULATION ---
+        // --- BAR CHART CALCULATION (Formerly Pie Chart) ---
         const lc = data.lenCounts;
         const totalLen = lc.short + lc.novella + lc.medium + lc.long + lc.epic || 1;
         
-        // Colors for pie slices (Using CSS variables)
+        // Colors for bar segments (Using CSS variables)
         const pieColors = { 
             short: 'var(--len-short)', 
             novella: 'var(--len-novella)', 
@@ -716,30 +716,14 @@ function openAnalyticsModal() {
             long: 'var(--len-long)', 
             epic: 'var(--len-epic)' 
         };
-        
-        let deg = 0;
-        const slices = [];
-        
-        // HELPER: Adds slice + white line separator
-        const addSlice = (key, val) => {
-            const pct = (val / totalLen) * 360;
-            if (val > 0) {
-                // 1. The colored slice
-                slices.push(`${pieColors[key]} ${deg}deg ${deg + pct}deg`);
-                // 2. The white separator line (1 degree wide)
-                slices.push(`#ffffff ${deg + pct}deg ${deg + pct + 0}deg`); 
-                // 3. Increment degree counter (slice + gap)
-                deg += pct + 1;
-            }
-        };
-        
-        addSlice('short', lc.short); 
-        addSlice('novella', lc.novella); 
-        addSlice('medium', lc.medium);
-        addSlice('long', lc.long); 
-        addSlice('epic', lc.epic);
-        
-        const pieGradient = slices.join(', ');
+
+        // Calculate percentages for the bar width
+        const getPct = (val) => (val / totalLen) * 100;
+        const pShort = getPct(lc.short);
+        const pNovella = getPct(lc.novella);
+        const pMedium = getPct(lc.medium);
+        const pLong = getPct(lc.long);
+        const pEpic = getPct(lc.epic);
 
         // --- TYPE BAR CALCULATION ---
         const totalType = data.typeCounts.fiction + data.typeCounts.nonfiction || 1;
@@ -777,9 +761,16 @@ function openAnalyticsModal() {
                 <div class="stats-distribution-grid">
                     <div class="stat-panel row-span">
                         <h3>BOOK LENGTHS</h3>
-                        <div class="pie-container">
-                            <div class="pie-chart" style="background: conic-gradient(${pieGradient})"></div>
-                            <div class="pie-legend">
+                        <div class="type-bar-container">
+                            <div class="type-bar" style="display:flex; overflow:hidden;">
+                                ${lc.short > 0 ? `<div style="width:${pShort}%; background:${pieColors.short}; height:100%;"></div>` : ''}
+                                ${lc.novella > 0 ? `<div style="width:${pNovella}%; background:${pieColors.novella}; height:100%;"></div>` : ''}
+                                ${lc.medium > 0 ? `<div style="width:${pMedium}%; background:${pieColors.medium}; height:100%;"></div>` : ''}
+                                ${lc.long > 0 ? `<div style="width:${pLong}%; background:${pieColors.long}; height:100%;"></div>` : ''}
+                                ${lc.epic > 0 ? `<div style="width:${pEpic}%; background:${pieColors.epic}; height:100%;"></div>` : ''}
+                            </div>
+                            
+                            <div class="pie-legend" style="margin-top: 15px;">
                                 <div class="pl-item"><span class="dot" style="background:${pieColors.short}"></span> Short <span class="muted">(0-60)</span> <b>${lc.short}</b></div>
                                 <div class="pl-item"><span class="dot" style="background:${pieColors.novella}"></span> Novella <span class="muted">(61-150)</span> <b>${lc.novella}</b></div>
                                 <div class="pl-item"><span class="dot" style="background:${pieColors.medium}"></span> Medium <span class="muted">(151-300)</span> <b>${lc.medium}</b></div>
