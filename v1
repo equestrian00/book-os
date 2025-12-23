@@ -42,7 +42,7 @@ const initialState = {
     filter: 'all', search: '', sortMode: 'created', sortDir: 'desc',
     categoryMode: 'all', viewMode: 'grid', gridSize: 200,
     rangeMy: [0, 5], rangeYear: [1920, 2030], rangeSpice: [0, 5], selectedTropes: [],
-    showMenu: false, innerViewMode: 'list'
+    showMenu: false, innerViewMode: 'list',
     currentPage: 1, 
     itemsPerPage: 24 // Number of books per page
 };
