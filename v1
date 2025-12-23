@@ -432,7 +432,7 @@ const rawLang = p.languagerating ? String(p.languagerating) : "";
     } else {
         langDisplay = rawLang.substring(0, 3);
     }
-    const displayScore = Number(myScore) > 0 ? myScore : lbScore;    let created = p.created ? parseDateSafe(p.created) : new Date(p.file.ctime.ts); if (!created || isNaN(created.getTime())) created = new Date(p.file.ctime.ts);
+    const displayScore = Number(myScore) > 0 ? myScore : lbScore;    let created = new Date(p.file.ctime.ts);
     let released = p.release_date || p.released; if (released) released = parseDateSafe(released); if (!released) released = new Date(year, 0, 1); 
     let genreList = p.genre ? (Array.isArray(p.genre) ? p.genre : String(p.genre).split(',')) : (p.tags || []);
     genreList = genreList.map(cleanText).filter(g => g && !['movie','film','read','izlendi'].includes(g.toLowerCase()));
