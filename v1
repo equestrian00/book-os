@@ -572,6 +572,7 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
     if (viewMode === 'timeline') return null;
     let processedPages = pages;
     if (state.filter === CONFIG.statusRead) processedPages = pages.where(p => p.status === CONFIG.statusRead);
+else if (state.filter === 'in_progress') processedPages = pages.where(p => String(p.status || "").toLowerCase() === 'in progress');
     else if (state.filter === 'list') {
         // Strict filter: Only show books that match statusList OR statusListAlt
         processedPages = pages.where(p => {
@@ -1181,6 +1182,10 @@ const createSegBtn = (txt, id) => {
     return btn; 
 };
 createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusRead); createSegBtn("Unread", 'list'); createSegBtn("Shelves", 'lists');
+// --- NEW: IN PROGRESS BUTTON (ICON ONLY) ---
+const btnInProgress = createSegBtn("", 'in_progress'); // Create with empty text
+btnInProgress.innerHTML = Icons.book;                  // Inject the SVG
+btnInProgress.title = "In Progress";                   // Add tooltip
 
 // RIGHT: TOOLS
 const navRight = navIsland.createEl("div", { cls: "nav-grp end tool-kit" });
