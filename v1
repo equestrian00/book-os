@@ -1477,11 +1477,12 @@ function renderApp() {
 // --- ADDED: DNF CHECK ---
             const isDNF = String(m.status).toLowerCase() === 'dnf';
             const warnIcon = isDNF ? `<span style="color:#f59e0b; margin-right:3px; display:inline-flex; align-items:center;">${Icons.lanwarn} </span>` : '';
-            // ------------------------
-            
+// --- NEW: IN PROGRESS BOOKMARK ---
+            const isInProgress = String(m.status || "").toLowerCase() === "in progress";
+            const bookmarkHtml = isInProgress ? `<div class="eth-bookmark"></div>` : '';
+
             const badgeHtml = m.badges.length > 0 ? `<div class="card-badges">${m.badges.slice(0,2).map(b=>`<span>${b}</span>`).join('')}</div>` : ''; 
-            card.innerHTML = `<div class=\"eth-card-cover\" style=\"background-image: url('${m.cover}')\"><div class=\"eth-card-overlay\"><div class=\"eth-play-circle\" style=\"color:${m.color}\">${Icons.book}</div></div>${m.score > 0 ? `<div class=\"eth-rating-badge\">${warnIcon}${Icons.star} ${m.score} ${m.spicerating > 0 ? `<span style="margin-left:6px; opacity:0.8; color: red;">🌶 ${m.spicerating}</span>` : ''}</div>` : ''}${badgeHtml}</div><div class=\"eth-card-meta\"><div class=\"title\" title=\"${m.title}\">${m.title}</div><div class=\"sub\">${m.year} • <span style=\"opacity:0.7; color:${m.color}\">${m.displayGenres}</span></div></div>`; 
-            card.onclick = () => openMovieModal(m); card.onmouseenter = () => { ambientBg.style.backgroundImage = `url('${m.cover}')`; ambientBg.classList.add('active'); }; card.onmouseleave = () => { ambientBg.classList.remove('active'); }; 
+card.innerHTML = `<div class=\"eth-card-cover\" style=\"background-image: url('${m.cover}')\">${bookmarkHtml}<div class=\"eth-card-overlay\"><div class=\"eth-play-circle\" style=\"color:${m.color}\">${Icons.book}</div></div>${m.score > 0 ? `<div class=\"eth-rating-badge\">${warnIcon}${Icons.star} ${m.score} ${m.spicerating > 0 ? `<span style="margin-left:6px; opacity:0.8; color: red;">🌶 ${m.spicerating}</span>` : ''}</div>` : ''}${badgeHtml}</div><div class=\"eth-card-meta\"><div class=\"title\" title=\"${m.title}\">${m.title}</div><div class=\"sub\">${m.year} • <span style=\"opacity:0.7; color:${m.color}\">${m.displayGenres}</span></div></div>`;            card.onclick = () => openMovieModal(m); card.onmouseenter = () => { ambientBg.style.backgroundImage = `url('${m.cover}')`; ambientBg.classList.add('active'); }; card.onmouseleave = () => { ambientBg.classList.remove('active'); }; 
         } 
     }); 
 }
