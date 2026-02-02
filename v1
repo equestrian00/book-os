@@ -581,14 +581,6 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
     let processedPages = pages;
     if (state.filter === CONFIG.statusRead) processedPages = pages.where(p => p.status === CONFIG.statusRead);
 else if (state.filter === 'in_progress') processedPages = pages.where(p => String(p.status || "").toLowerCase() === 'in progress');
-else if (state.filter === 'unpublished') {
-        processedPages = pages.where(p => {
-            // We use getMovieData here to ensure we parse the date correctly
-            const m = getMovieData(p); 
-            // Return true if released date exists AND is in the future
-            return m.released && m.released > new Date();
-        });
-    }
     else if (state.filter === 'list') {
         // Strict filter: Only show books that match statusList OR statusListAlt
         processedPages = pages.where(p => {
@@ -604,6 +596,14 @@ else if (state.filter === 'unpublished') {
         
         // 1. Category/Genre/Tech Filter
         let matchCat = true;
+// A. Handle Special "Unpublished" Mode
+        if (categoryMode === 'unpublished') {
+            // Check if released date exists AND is in the future
+            // We use setHours(0,0,0,0) to compare dates without worrying about time
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            matchCat = m.released && m.released > today;
+        }
         if (categoryMode !== 'all' && categoryMode !== 'series') {
             // Combine Genres and Badges
             let rawCheckList = [...m.allGenres, ...m.badges];
@@ -1209,9 +1209,6 @@ createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusRead); createSegBt
 const btnInProgress = createSegBtn("", 'in_progress'); // Create with empty text
 btnInProgress.innerHTML = Icons.book;                  // Inject the SVG
 btnInProgress.title = "In Progress";                   // Add tooltip
-const btnUnpublished = createSegBtn("", 'unpublished');
-btnUnpublished.innerHTML = Icons.pen; // Uses the new icon
-btnUnpublished.title = "Unpublished / Future Release";
 
 // RIGHT: TOOLS
 const navRight = navIsland.createEl("div", { cls: "nav-grp end tool-kit" });
@@ -1349,6 +1346,7 @@ const createCatChip = (container, txt, id, isSpecial = false) => {
 };
 createCatChip(rowSpecial, "All", "all", true);
 createCatChip(rowSpecial, "Series", "series", true);
+createCatChip(rowSpecial, "Unpublished", "unpublished", true);
 // GENERATE BADGE CHIPS FROM CONFIG
 availableBadges.forEach(key => {
     const label = BADGE_CONFIG[key] ? BADGE_CONFIG[key].label : key;
