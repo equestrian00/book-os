@@ -415,8 +415,11 @@ function getMovieData(page) {
 let rawTitle = p.title || p.file.name;
 const title = rawTitle.split(/ by /i)[0].trim();
     const rawYear = p.year || p.Year || p.yil || p.release_date;
-    const year = rawYear ? Number(String(rawYear).match(/\d{4}/)?.[0]) || 0 : 0;
-    const booknumber = p.booknumber || null; 
+// 1. PRIORITY CHECK: Look for 'publishDate' first, then others
+    const rawDateVal = p.publishDate || p.publish_date || p.releaseDate || p.year || p.Year || p.yil;
+    
+    // 2. EXTRACT YEAR: regex grabs "2024" from "2024-05-20" or just "2024"
+    const year = rawDateVal ? Number(String(rawDateVal).match(/\d{4}/)?.[0]) || 0 : 0;    const booknumber = p.booknumber || null; 
 // New logic to handle both numbers and stars in the 'rating' field
     let rawRating = p.rating || 0;
     let myScore = 0;
@@ -436,8 +439,11 @@ const title = rawTitle.split(/ by /i)[0].trim();
         langDisplay = rawLang.substring(0, 3);
     }
     const displayScore = Number(myScore); let created = new Date(p.file.ctime.ts);
-    let released = p.release_date || p.released; if (released) released = parseDateSafe(released); if (!released) released = new Date(year, 0, 1); 
-    let genreList = p.genre ? (Array.isArray(p.genre) ? p.genre : String(p.genre).split(',')) : (p.tags || []);
+// Prioritize publishDate for the specific date object
+    let released = p.publishDate || p.publish_date || p.release_date || p.released; 
+    if (released) released = parseDateSafe(released); 
+    if (!released) released = new Date(year, 0, 1); // Default to Jan 1 if no specific date    
+let genreList = p.genre ? (Array.isArray(p.genre) ? p.genre : String(p.genre).split(',')) : (p.tags || []);
     genreList = genreList.map(cleanText).filter(g => g && !['movie','film','read','izlendi'].includes(g.toLowerCase()));
     let userLists = [];
     if (p.lists) {
@@ -998,7 +1004,7 @@ function openMovieModal(m, parentStack = null) {
                     <h1 class="movie-title">${m.title}</h1>
                     <div class="info-grid">
                         <div class="info-item"><span class="ii-label">PAGES</span><span class="ii-val">${prettyRuntime}</span></div>
-                        <div class="info-item"><span class="ii-label">YEAR</span><span class="ii-val">${m.year}</span></div>
+                        <div class="info-item"><span class="ii-label">PUBLISHED</span><span class="ii-val">${m.released ? formatDateDisplay(m.released) : m.year}</span></div>
                     </div>
                     <div class="eth-plot-box"><p class="movie-plot">${m.description}</p></div>
                     <div class="section-title">TROPES</div>${tropesHtml}
