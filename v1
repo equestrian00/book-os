@@ -93,12 +93,13 @@ const Icons = {
 };
 
 const SortCriteria = [
+    { id: 'created', label: 'Added', icon: Icons.calendar },
+    { id: 'modified', label: 'Modified', icon: Icons.edit },
+    { id: 'runtimeMins', label: 'Pages', icon: Icons.book },
     { id: 'title', label: 'Title', icon: Icons.text },
     { id: 'score', label: 'Score', icon: Icons.star },
     { id: 'scoreLB', label: 'LB Score', icon: Icons.chart },
-    { id: 'created', label: 'Added', icon: Icons.calendar },
     { id: 'year', label: 'Year', icon: Icons.calendar },
-    { id: 'runtimeMins', label: 'Pages', icon: Icons.book }
 ];
 
 // --- 5. HELPERS ---
@@ -662,6 +663,7 @@ else if (state.filter === 'in_progress') processedPages = pages.where(p => Strin
                 case 'score': return d.score || 0;
                 case 'scoreLB': return d.scoreLB || 0;
                 case 'year': return d.year || 0;
+                case 'modified': return d.file && d.file.mtime ? d.file.mtime.ts : 0;
                 case 'runtimeMins': return d.runtimeMins || 0;
                 case 'created': return d.created ? d.created.getTime() : 0;
                 case 'title': default: return item.title || d.title || ""; 
