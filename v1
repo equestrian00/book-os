@@ -56,6 +56,7 @@ const currentFilePath = this.currentFilePath;
 // --- 3. ICONS ---
 const Icons = {
     logo: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>`,
+    pen: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>`,
     bookmark: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>`,
     search: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
     close: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
@@ -94,6 +95,7 @@ const Icons = {
 
 const SortCriteria = [
     { id: 'created', label: 'Added', icon: Icons.calendar },
+    { id: 'released', label: 'Published', icon: Icons.calendar },
     { id: 'modified', label: 'Modified', icon: Icons.edit },
     { id: 'runtimeMins', label: 'Pages', icon: Icons.book },
     { id: 'title', label: 'Title', icon: Icons.text },
@@ -579,6 +581,14 @@ function processItems(pages, sortMode, sortDir, viewMode, categoryMode) {
     let processedPages = pages;
     if (state.filter === CONFIG.statusRead) processedPages = pages.where(p => p.status === CONFIG.statusRead);
 else if (state.filter === 'in_progress') processedPages = pages.where(p => String(p.status || "").toLowerCase() === 'in progress');
+else if (state.filter === 'unpublished') {
+        processedPages = pages.where(p => {
+            // We use getMovieData here to ensure we parse the date correctly
+            const m = getMovieData(p); 
+            // Return true if released date exists AND is in the future
+            return m.released && m.released > new Date();
+        });
+    }
     else if (state.filter === 'list') {
         // Strict filter: Only show books that match statusList OR statusListAlt
         processedPages = pages.where(p => {
@@ -666,6 +676,7 @@ else if (state.filter === 'in_progress') processedPages = pages.where(p => Strin
             switch (sortMode) {
                 case 'score': return d.score || 0;
                 case 'year': return d.year || 0;
+                case 'released': return d.released ? d.released.getTime() : 0;
                 case 'modified': return d.file && d.file.mtime ? d.file.mtime.ts : 0;
                 case 'runtimeMins': return d.runtimeMins || 0;
                 case 'created': return d.created ? d.created.getTime() : 0;
@@ -1198,6 +1209,9 @@ createSegBtn("All", 'all'); createSegBtn("Read", CONFIG.statusRead); createSegBt
 const btnInProgress = createSegBtn("", 'in_progress'); // Create with empty text
 btnInProgress.innerHTML = Icons.book;                  // Inject the SVG
 btnInProgress.title = "In Progress";                   // Add tooltip
+const btnUnpublished = createSegBtn("", 'unpublished');
+btnUnpublished.innerHTML = Icons.pen; // Uses the new icon
+btnUnpublished.title = "Unpublished / Future Release";
 
 // RIGHT: TOOLS
 const navRight = navIsland.createEl("div", { cls: "nav-grp end tool-kit" });
