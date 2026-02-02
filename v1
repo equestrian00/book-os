@@ -417,12 +417,11 @@ function getMovieData(page) {
 let rawTitle = p.title || p.file.name;
 const title = rawTitle.split(/ by /i)[0].trim();
     const rawYear = p.year || p.Year || p.yil || p.release_date;
-// 1. LOOK FOR PUBLISHDATE FIRST
-    const rawDateVal = p.publishDate || p.publish_date || p.releaseDate || p.released || p.year || p.Year;
+// 1. PRIORITY CHECK: Look for 'publishDate' first, then others
+    const rawDateVal = p.publishDate || p.publish_date || p.releaseDate || p.year || p.Year || p.yil;
     
-    // 2. Extract Year from that date (or fallback)
-    const year = rawDateVal ? Number(String(rawDateVal).match(/\d{4}/)?.[0]) || 0 : 0;
-const booknumber = p.booknumber || null; 
+    // 2. EXTRACT YEAR: regex grabs "2024" from "2024-05-20" or just "2024"
+    const year = rawDateVal ? Number(String(rawDateVal).match(/\d{4}/)?.[0]) || 0 : 0;    const booknumber = p.booknumber || null; 
 // New logic to handle both numbers and stars in the 'rating' field
     let rawRating = p.rating || 0;
     let myScore = 0;
@@ -442,10 +441,10 @@ const booknumber = p.booknumber || null;
         langDisplay = rawLang.substring(0, 3);
     }
     const displayScore = Number(myScore); let created = new Date(p.file.ctime.ts);
-// 3. SET THE RELEASE DATE OBJECT
-    let released = p.publishDate || p.publish_date || p.releaseDate || p.release_date || p.released; 
+// Prioritize publishDate for the specific date object
+    let released = p.publishDate || p.publish_date || p.release_date || p.released; 
     if (released) released = parseDateSafe(released); 
-    if (!released) released = new Date(year, 0, 1); // Fallback to Jan 1st
+    if (!released) released = new Date(year, 0, 1); // Default to Jan 1 if no specific date    
 let genreList = p.genre ? (Array.isArray(p.genre) ? p.genre : String(p.genre).split(',')) : (p.tags || []);
     genreList = genreList.map(cleanText).filter(g => g && !['movie','film','read','izlendi'].includes(g.toLowerCase()));
     let userLists = [];
@@ -597,12 +596,6 @@ else if (state.filter === 'in_progress') processedPages = pages.where(p => Strin
         
         // 1. Category/Genre/Tech Filter
         let matchCat = true;
-if (categoryMode === 'unpublished') {
-            // Check if date exists AND is in the future
-            const today = new Date();
-            today.setHours(0,0,0,0); // Ignore time, just compare dates
-            matchCat = m.released && m.released > today;
-        }
         if (categoryMode !== 'all' && categoryMode !== 'series') {
             // Combine Genres and Badges
             let rawCheckList = [...m.allGenres, ...m.badges];
@@ -1345,7 +1338,6 @@ const createCatChip = (container, txt, id, isSpecial = false) => {
 };
 createCatChip(rowSpecial, "All", "all", true);
 createCatChip(rowSpecial, "Series", "series", true);
-createCatChip(rowSpecial, "Unpublished", "unpublished", true);
 // GENERATE BADGE CHIPS FROM CONFIG
 availableBadges.forEach(key => {
     const label = BADGE_CONFIG[key] ? BADGE_CONFIG[key].label : key;
