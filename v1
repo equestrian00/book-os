@@ -1502,10 +1502,17 @@ function renderApp() {
             // --- BADGE LOGIC (RATING vs BOOKMARK) ---
             // If it has a score, show score. If no score but In Progress, show Bookmark icon.
             let topBadgeHtml = '';
-            if (m.score > 0) {
-                topBadgeHtml = `<div class=\"eth-rating-badge\">${warnIcon}${Icons.star} ${m.score} ${m.spicerating > 0 ? `<span style="margin-left:6px; opacity:0.8; color: red;">🌶 ${m.spicerating}</span>` : ''}</div>`;
-            } else if (isInProgress) {
-                // Uses the same class 'eth-rating-badge' to inherit position/blur styles
+            if (isDNF) {
+                // 1. DNF: Warning Symbol (Amber Color)
+                // Uses the same glass-panel styling as the rating badge
+                topBadgeHtml = `<div class=\"eth-rating-badge\" style=\"color: #f59e0b; box-shadow: 0 4px 10px rgba(0,0,0,0.3);\">${Icons.lanwarn}</div>`;
+            } 
+            else if (m.score > 0) {
+                // 2. RATED: Stars + Score
+                topBadgeHtml = `<div class=\"eth-rating-badge\">${Icons.star} ${m.score} ${m.spicerating > 0 ? `<span style=\"margin-left:6px; opacity:0.8; color: red;\">🌶 ${m.spicerating}</span>` : ''}</div>`;
+            } 
+            else if (isInProgress) {
+                // 3. IN PROGRESS: Bookmark (Accent Color)
                 topBadgeHtml = `<div class=\"eth-rating-badge\" style=\"color: var(--accent);\">${Icons.bookmark}</div>`;
             }
 
