@@ -43,7 +43,7 @@ const GenreColors = {
 const initialState = {
     filter: 'all', search: '', sortMode: 'created', sortDir: 'desc',
     categoryMode: 'all', viewMode: 'grid', gridSize: 200,
-    rangeMy: [0, 5], rangeYear: [0, 2030], rangeSpice: [0, 5], selectedTropes: [],
+    rangeMy: [0, 10], rangeYear: [0, 2030], rangeSpice: [0, 5], selectedTropes: [],
     showMenu: false, innerViewMode: 'list'
 };
 
@@ -1231,13 +1231,13 @@ menuHeader.querySelector('.reset-btn').onclick = () => {
     segmentedWrap.querySelector('.eth-seg-btn').classList.add('active');
     
     viewMenu.querySelectorAll('.range-min').forEach(i => {
-       if(i.nextElementSibling.classList.contains('range-max')) { 
-           if(i.max == "5") i.value = 0; else i.value = 1920; 
-       }
-    });
-    viewMenu.querySelectorAll('.range-max').forEach(i => {
-       if(i.max == "5") i.value = 5; else i.value = 2030;
-    });
+   if(i.nextElementSibling.classList.contains('range-max')) { 
+       if(i.max == "10" || i.max == "5") i.value = 0; else i.value = 1920; 
+   }
+});
+viewMenu.querySelectorAll('.range-max').forEach(i => {
+   if(i.max == "10" || i.max == "5") i.value = i.max; else i.value = 2030;
+});
     
     updateMenuVisuals();
     renderApp();
@@ -1322,7 +1322,7 @@ const createDualSlider = (parent, title, min, max, step, stateKey) => {
     track.style.background = `linear-gradient(to right, rgba(255,255,255,0.1) ${p1}%, var(--accent) ${p1}%, var(--accent) ${p2}%, rgba(255,255,255,0.1) ${p2}%)`;
 };
 
-createDualSlider(rowRanges, "Personal Score", 0, 5, 0.1, "rangeMy");
+createDualSlider(rowRanges, "Personal Score", 0, 10, 1, "rangeMy");
 createDualSlider(rowRanges, "Spice Rating", 0, 5, 1, "rangeSpice");
 createDualSlider(rowRanges, "Publication Year", 1920, 2030, 1, "rangeYear");
 
@@ -1490,7 +1490,7 @@ function renderApp() {
             const delBtnEl = card.querySelector('.stack-delete-btn'); if(delBtnEl) { delBtnEl.onclick = (e) => { e.stopPropagation(); deleteList(item.id, item.title); }; }
             card.onclick = () => openSeriesModal(item); card.onmouseenter = () => { ambientBg.style.backgroundImage = `url('${item.cover}')`; ambientBg.classList.add('active'); }; card.onmouseleave = () => { ambientBg.classList.remove('active'); }; 
         } else { 
-            const m = item.data; const isMasterpiece = m.score >= 4.5; const card = contentArea.createEl("div", { cls: isMasterpiece ? "eth-card masterpiece" : "eth-card" }); 
+            const m = item.data; const isMasterpiece = m.score >= 9; const card = contentArea.createEl("div", { cls: isMasterpiece ? "eth-card masterpiece" : "eth-card" }); 
             
             card.style.setProperty('--accent', m.color);
 
